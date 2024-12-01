@@ -1,0 +1,224 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.groups-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.group {
+    flex: 1;
+    min-width: 300px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #444;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.student-card {
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.student-name {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.programs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+}
+
+.program-check {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.controls {
+    text-align: center;
+    margin-top: 20px;
+}
+
+button {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.delete-btn {
+    background: #dc3545;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+.group-cell {
+    background-color: #FAFAFA;
+    font-weight: bold;
+    text-align: center;
+}
+
+.student-item {
+    background-color: #ffffff;
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-column {
+    background-color: #E8F5E9;
+    text-align: center;
+    width: 80px;
+}
+
+td.day-column {
+    background-color: #F1F8E9;
+}
+
+.qalta-column {
+    background-color: #E8F5E9;
+    text-align: center;
+    color: #000;
+}
+
+.qalta-cell {
+    text-align: center;
+    background-color: #FFF3E0;
+}
+
+.week-header {
+    background-color: #f8f9fa;
+    text-align: right;
+}
+
+.week-header-cell {
+    padding: 5px 15px !important;
+    font-weight: bold;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+}
+
+.hijri-date {
+    font-size: 0.9em;
+    color: #666;
+    font-weight: normal;
+}
+
+/* تلوين أعمدة الجدول */
+#studentsTable td:nth-child(n+3):nth-child(-n+6) {
+    background-color: #E3F2FD; /* لون أيام الحلقة */
+}
+
+#studentsTable td.qalta-cell {
+    background-color: #FFF3E0;
+}
+
+#studentsTable td.lesson-cell {
+    background-color: #E8F5E9;
+}
+
+#studentsTable td.outing-cell {
+    background-color: #F3E5F5;
+}
+
+#studentsTable td.self-cell {
+    background-color: #E0F7FA;
+}
+
+#studentsTable td.challenges-cell {
+    background-color: #FFF8E1;
+}
+
+#studentsTable td.total-cell {
+    background-color: #FAFAFA;
+}
+
+/* تلوين رأس الجدول */
+#studentsTable thead th {
+    background-color: #F5F5F5;
+}
+
+/* تلوين خلية المجموعة */
+#studentsTable td.group-cell {
+    background-color: #FAFAFA;
+    font-weight: bold;
+}
+
+/* تحسين مظهر الخلايا */
+#studentsTable td {
+    padding: 8px;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+/* تحسين مظهر الصناديق */
+.checkbox-pair {
+    background-color: white;
+    border-radius: 4px;
+    padding: 2px;
+    margin: 2px;
+}
+
+/* تحسين مظهر القوائم المنسدلة */
+.medal-select {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+/* تحسين مظهر صف المجموع */
+.total-row td {
+    font-weight: bold;
+    border-top: 2px solid #ddd !important;
+}

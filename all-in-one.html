@@ -1,0 +1,1832 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متابعة الطلاب</title>
+    <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment-hijri@2.1.2/moment-hijri.min.js"></script>
+    <!-- إضافة مكتبات Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .controls button:hover {
+            background-color: #45a049;
+        }
+
+        .tracking-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tracking-table th {
+            padding: 8px;
+            text-align: center;
+            border: 1px solid #ddd;
+            font-size: 0.9em;
+        }
+
+        /* عمود المجموعة والأسماء */
+        .group-cell {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            width: 120px;
+        }
+
+        .student-item {
+            background-color: #ffffff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* أعمدة الحلقة */
+        .tracking-table th.day-column {
+            background-color: #4B89DC;
+            color: white;
+        }
+
+        .tracking-table td.day-column {
+            background-color: #EBF3FF;
+        }
+
+        /* عمود القلطة */
+        .tracking-table th.qalta-column {
+            background-color: #37BC9B;
+            color: white;
+        }
+
+        .tracking-table td.qalta-cell {
+            background-color: #E8F8F5;
+        }
+
+        /* عمود الدرس */
+        .tracking-table th.lesson-column {
+            background-color: #967ADC;
+            color: white;
+        }
+
+        .tracking-table td.lesson-cell {
+            background-color: #F5F2FF;
+        }
+
+        /* عمود الطلعة */
+        .tracking-table th.outing-column {
+            background-color: #5D9CEC;
+            color: white;
+        }
+
+        .tracking-table td.outing-cell {
+            background-color: #EEF4FF;
+        }
+
+        /* عمود الذاتي */
+        .tracking-table th.self-column {
+            background-color: #48CFAD;
+            color: white;
+        }
+
+        .tracking-table td.self-cell {
+            background-color: #E8F8F5;
+        }
+
+        /* عمود التحديات */
+        .tracking-table th.challenges-column {
+            background-color: #FFC400;
+            color: white;
+        }
+
+        .tracking-table td.challenges-cell {
+            background-color: #FFF2CC;
+        }
+
+        /* تنسيق مربعات الاختيار */
+        .qalta-checkbox, 
+        .self-checkbox-pair input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .qalta-checkbox {
+            accent-color: #37BC9B;
+        }
+
+        .self-checkbox-pair input[type="checkbox"] {
+            accent-color: #48CFAD;
+        }
+
+        .delete-btn {
+            display: none;
+            background-color: #ED5565;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-right: 5px;
+        }
+
+        .delete-btn:hover {
+            background-color: #DA4453;
+        }
+
+        .checkbox-pair {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .checkbox-pair label {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.8em;
+            cursor: pointer;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .self-checkbox-pair {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .save-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+
+        /* ستايل زر التحرير */
+        .edit-mode-btn {
+            background-color: #5D9CEC;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .edit-mode-btn:hover {
+            background-color: #4A89DC;
+        }
+
+        .edit-mode-btn.active {
+            background-color: #ED5565;
+        }
+
+        .edit-mode-btn.active:hover {
+            background-color: #DA4453;
+        }
+
+        /* إظهار أزرار الحذف في وضع التحرير */
+        .edit-mode .delete-btn {
+            display: inline-block;
+        }
+
+        .edit-mode .add-student-cell {
+            display: table-cell;
+        }
+
+        .add-student-cell {
+            display: none;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .add-student-btn {
+            background-color: #37BC9B;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .add-student-btn:hover {
+            background-color: #48CFAD;
+        }
+
+        /* تصميم النافذة المنبثقة */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        .group-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .group-title {
+            margin: 0 0 15px 0;
+            color: #2C3E50;
+            font-size: 1.2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .add-student-btn-group {
+            background-color: #37BC9B;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .add-student-btn-group:hover {
+            background-color: #48CFAD;
+        }
+
+        .student-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: white;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .student-list-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .student-list-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .student-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .delete-icon {
+            color: #ED5565;
+            cursor: pointer;
+            font-size: 1.2em;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .delete-icon:hover {
+            opacity: 1;
+        }
+
+        .delete-btn {
+            background-color: #ED5565;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .delete-btn:hover {
+            background-color: #DA4453;
+        }
+
+        .close-modal {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .close-modal:hover {
+            color: #333;
+        }
+
+        .students-list {
+            margin: 20px 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .student-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .student-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .add-student-modal {
+            background-color: #37BC9B;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .add-student-modal:hover {
+            background-color: #48CFAD;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Styles for medal dropdown */
+        .medal-select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+        }
+        .medal-select option[value="gold"] {
+            background-color: #FFD700;
+        }
+        .medal-select option[value="silver"] {
+            background-color: #C0C0C0;
+        }
+        .medal-select option[value="bronze"] {
+            background-color: #CD7F32;
+        }
+
+        /* تنسيق خانات التحديات */
+        .challenges-pair {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .medal-select {
+            width: 70px;
+            padding: 3px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .medal-select option[value="gold"] {
+            background-color: #FFD700;
+            color: #000;
+        }
+
+        .medal-select option[value="silver"] {
+            background-color: #C0C0C0;
+            color: #000;
+        }
+
+        .medal-select option[value="bronze"] {
+            background-color: #CD7F32;
+            color: #000;
+        }
+
+        /* تنسيق صف المجموع */
+        .total-row {
+            background-color: #E8F5E9;
+            font-weight: bold;
+            border-bottom: 2px solid #4CAF50;
+        }
+        .total-row td {
+            text-align: center;
+            padding: 12px 8px;
+            color: #1B5E20;
+        }
+        .total-row td:first-child {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1.1em;
+        }
+        .group-average {
+            font-size: 1.2em;
+            color: #2E7D32;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
+        }
+
+        /* تنسيق عمود المجموع */
+        .total-column {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .total-cell {
+            background-color: #E8F5E9;
+            text-align: center;
+            font-weight: bold;
+        }
+        .total-percentage {
+            color: #2E7D32;
+            font-size: 1.1em;
+        }
+
+        /* تنسيق النسب المئوية */
+        .percentage-high {
+            color: #2E7D32;
+            font-weight: bold;
+        }
+        .percentage-medium {
+            color: #FFA000;
+            font-weight: bold;
+        }
+        .percentage-low {
+            color: #D32F2F;
+            font-weight: bold;
+        }
+        .percentage-excellent {
+            color: #1A237E;
+            font-weight: bold;
+            text-shadow: 0 0 3px rgba(26, 35, 126, 0.3);
+        }
+
+        /* تنسيق عنوان الأسبوع */
+        .week-header {
+            background-color: #4A89DC;
+        }
+
+        .week-header-cell {
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .hijri-date {
+            font-size: 0.9em;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .week-header-cell .hijri-date {
+            color: #fff;
+            opacity: 0.9;
+        }
+
+        /* أنماط واجهة اختيار الفترة */
+        .period-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .period-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .period-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .period-button {
+            background-color: #4A89DC;
+            color: white;
+            border: none;
+            padding: 30px;
+            font-size: 1.5em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            text-align: center;
+        }
+
+        .period-button:hover {
+            background-color: #357abd;
+            transform: translateY(-2px);
+        }
+
+        .period-button.active {
+            background-color: #2ecc71;
+        }
+
+        .main-interface {
+            display: none;
+        }
+
+        .main-interface.active {
+            display: block;
+        }
+
+        /* أنماط جديدة */
+        .add-student-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .add-student-btn:hover {
+            background-color: #45a049;
+        }
+
+        .group-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0 10px;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .empty-group-message {
+            color: #666;
+            font-style: italic;
+            padding: 5px 20px;
+            margin-bottom: 10px;
+        }
+
+        .group-select {
+            margin-right: 10px;
+            padding: 3px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .student-list-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .student-list-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .delete-icon {
+            color: #ff4444;
+            cursor: pointer;
+            margin-left: 10px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .delete-icon:hover {
+            color: #cc0000;
+        }
+
+        .period-5-container {
+            display: inline-block;
+        }
+        
+        .summary-btn {
+            margin-right: 10px;
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #totalSummaryModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1200px;
+            direction: rtl;
+        }
+
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #totalSummaryTable {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        #totalSummaryTable th, #totalSummaryTable td {
+            text-align: center;
+            padding: 8px;
+        }
+
+        #totalSummaryTable th {
+            background-color: #f5f5f5;
+        }
+
+        .period-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .period-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .period-button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .period-button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .summary-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .summary-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .group-total {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .period-average, .total-average {
+            text-align: center;
+        }
+
+        #totalSummaryTable th {
+            background-color: #e9ecef;
+            text-align: center;
+            padding: 10px;
+        }
+
+        #totalSummaryTable td {
+            padding: 8px;
+            vertical-align: middle;
+        }
+
+        .total-average {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .share-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .share-button:hover {
+            background-color: #45a049;
+        }
+
+        #shareModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .share-modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .share-link-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .share-link-input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .copy-link-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .copy-link-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <!-- واجهة اختيار الفترة -->
+    <div class="period-selector" id="periodSelector">
+        <h1 class="period-title">اختر الفترة</h1>
+        <div class="period-buttons">
+            <button class="period-button" onclick="selectPeriod(1)">الفترة 1<br><small>الأسبوع 1-2</small></button>
+            <button class="period-button" onclick="selectPeriod(2)">الفترة 2<br><small>الأسبوع 3-4</small></button>
+            <button class="period-button" onclick="selectPeriod(3)">الفترة 3<br><small>الأسبوع 5-6</small></button>
+            <button class="period-button" onclick="selectPeriod(4)">الفترة 4<br><small>الأسبوع 7-8</small></button>
+            <button class="period-button" onclick="selectPeriod(5)">الفترة 5<br><small>الأسبوع 9-10</small></button>
+            <button onclick="showTotalSummary()" class="summary-btn">المجموع الكلي</button>
+        </div>
+    </div>
+
+    <!-- نافذة المجموع الكلي -->
+    <div id="totalSummaryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeTotalSummary()">&times;</span>
+            <h2>المجموع الكلي للفترات</h2>
+            <table id="totalSummaryTable" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>المجموعة</th>
+                        <th>الطالب</th>
+                        <th>الفترة 1</th>
+                        <th>الفترة 2</th>
+                        <th>الفترة 3</th>
+                        <th>الفترة 4</th>
+                        <th>المجموع الكلي</th>
+                    </tr>
+                </thead>
+                <tbody id="totalSummaryTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div class="main-interface" id="mainInterface">
+        <div class="save-indicator">✓ تم الحفظ</div>
+        <div class="container">
+            <div class="controls">
+                <div>
+                    <button onclick="showEditModal()" class="edit-mode-btn">تحرير الطلاب</button>
+                    <button onclick="showTotalSummary()" class="summary-btn">عرض المجموع الكلي</button>
+                    <button onclick="showShareModal()" class="share-button">مشاركة البيانات</button>
+                </div>
+            </div>
+
+            <table class="tracking-table">
+                <thead>
+                    <tr>
+                        <th>المجموعة</th>
+                        <th>الطالب</th>
+                        <th>الأحد</th>
+                        <th>الاثنين</th>
+                        <th>الثلاثاء</th>
+                        <th>الأربعاء</th>
+                        <th>قلطة</th>
+                        <th>درس</th>
+                        <th>طلعة</th>
+                        <th>ذاتي</th>
+                        <th>تحديات</th>
+                        <th>المجموع</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- نافذة تحرير الطلاب -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title">إدارة الطلاب</h2>
+                    <span class="close-modal" onclick="closeEditModal()">&times;</span>
+                </div>
+                <div id="studentsListContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة مشاركة البيانات -->
+    <div id="shareModal" class="modal">
+        <div class="share-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">مشاركة البيانات</h2>
+                <span class="close-modal" onclick="closeShareModal()">&times;</span>
+            </div>
+            <p>يمكنك مشاركة هذا الرابط مع الآخرين للوصول إلى بياناتك:</p>
+            <div class="share-link-container">
+                <input type="text" id="shareLink" class="share-link-input" readonly>
+                <button onclick="copyShareLink()" class="copy-link-btn">نسخ الرابط</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تكوين Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCXWB9wK-smhEjqsfudpKoXB2uSQsOnaM",
+            authDomain: "frist-71a2b.firebaseapp.com",
+            projectId: "frist-71a2b",
+            storageBucket: "frist-71a2b.firebasestorage.app",
+            messagingSenderId: "1008565335940",
+            appId: "1:1008565335940:web:e13df343893fd6469ccfd1",
+            measurementId: "G-3EKJGXL1G4",
+            databaseURL: "https://frist-71a2b-default-rtdb.firebaseio.com"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // إنشاء معرف فريد للمستخدم
+        let userId = localStorage.getItem('userId');
+        if (!userId) {
+            userId = Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('userId', userId);
+        }
+
+        // تعريف أيام الحلقة
+        const halaqahDays = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء'];
+
+        // تعريف أسماء المجموعات
+        const groupNames = {
+            1: 'أبو سعود',
+            2: 'أبو حمد',
+            3: 'أبو عبد المجيد'
+        };
+
+        // تخزين بيانات الطلاب
+        let students = []; // قائمة الطلاب الثابتة
+        let weeklyData = {}; // بيانات كل أسبوع
+
+        // دالة حفظ بيانات الأسبوع
+        async function saveWeekData(weekNumber) {
+            const weekData = JSON.parse(localStorage.getItem(`week${weekNumber}`));
+            await database.ref(`users/${userId}/weeks/week${weekNumber}`).set(weekData);
+            showSaveIndicator();
+        }
+
+        // دالة تحميل بيانات الأسبوع
+        async function loadWeekData(weekNumber) {
+            try {
+                const snapshot = await database.ref(`users/${userId}/weeks/week${weekNumber}`).once('value');
+                const data = snapshot.val();
+                if (data) {
+                    localStorage.setItem(`week${weekNumber}`, JSON.stringify(data));
+                    return data;
+                }
+                return null;
+            } catch (error) {
+                console.error('Error loading week data:', error);
+                return null;
+            }
+        }
+
+        // دالة تهيئة بيانات الطالب للأسبوع
+        function initializeStudentWeekData(studentId, weekNumber) {
+            if (!weeklyData[weekNumber]) {
+                weeklyData[weekNumber] = {};
+            }
+            if (!weeklyData[weekNumber][studentId]) {
+                weeklyData[weekNumber][studentId] = {
+                    attendance: {},
+                    qalta: false,
+                    lesson: false,
+                    outing: false,
+                    selfStudy: { first: false, second: false },
+                    challenges: { c1: '', c2: '' }
+                };
+            }
+            return weeklyData[weekNumber][studentId];
+        }
+
+        // دالة إنشاء طالب جديد
+        function createNewStudent(name) {
+            return {
+                id: Date.now().toString(), // معرف فريد للطالب
+                name: name,
+                group: 1 // المجموعة الافتراضية
+            };
+        }
+
+        // دالة حفظ بيانات الطلاب
+        async function saveStudentsList() {
+            const studentsList = JSON.parse(localStorage.getItem('studentsList'));
+            await database.ref(`users/${userId}/studentsList`).set(studentsList);
+        }
+
+        // دالة تحميل بيانات الطلاب
+        async function loadStudentsList() {
+            try {
+                const snapshot = await database.ref(`users/${userId}/studentsList`).once('value');
+                const data = snapshot.val();
+                if (data) {
+                    localStorage.setItem('studentsList', JSON.stringify(data));
+                    return data;
+                }
+                return [];
+            } catch (error) {
+                console.error('Error loading students list:', error);
+                return [];
+            }
+        }
+
+        // دالة إضافة طالب
+        function addStudent(name) {
+            const newStudent = createNewStudent(name);
+            students.push(newStudent);
+            saveStudentsList();
+            renderAllGroups();
+            updateStudentsList();
+        }
+
+        // دالة حذف طالب
+        function deleteStudent(studentId) {
+            const index = students.findIndex(s => s.id === studentId);
+            if (index !== -1) {
+                students.splice(index, 1);
+                // حذف بيانات الطالب من جميع الأسابيع
+                Object.keys(weeklyData).forEach(week => {
+                    delete weeklyData[week][studentId];
+                });
+                saveStudentsList();
+                renderAllGroups();
+                updateStudentsList();
+            }
+        }
+
+        // دالة تحديث حالة الحضور أو التسميع
+        function toggleHalaqah(studentId, day, type, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            if (!studentData.attendance[day]) {
+                studentData.attendance[day] = {};
+            }
+            studentData.attendance[day][type] = !studentData.attendance[day][type];
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديث حالة القلطة
+        function toggleQalta(studentId, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            studentData.qalta = !studentData.qalta;
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديث حالة الدرس
+        function toggleLesson(studentId, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            studentData.lesson = !studentData.lesson;
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديث حالة الطلعة
+        function toggleOuting(studentId, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            studentData.outing = !studentData.outing;
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديث حالة الذاتي
+        function toggleSelf(studentId, type, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            studentData.selfStudy[type] = !studentData.selfStudy[type];
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديث حالة التحديات
+        function toggleChallenge(studentId, challengeNumber, value, weekNumber) {
+            const studentData = initializeStudentWeekData(studentId, weekNumber);
+            studentData.challenges[`c${challengeNumber}`] = value;
+            saveWeekData(weekNumber);
+            renderAllGroups();
+        }
+
+        // دالة تحديد فئة النسبة المئوية
+        function getPercentageClass(percentage) {
+            if (percentage >= 120) return 'percentage-excellent';
+            if (percentage >= 100) return 'percentage-very-good';
+            if (percentage >= 80) return 'percentage-good';
+            if (percentage >= 60) return 'percentage-fair';
+            return 'percentage-poor';
+        }
+
+        // دالة حساب النسبة المئوية للطالب
+        function calculateStudentPercentage(studentId, weekNumber) {
+            const studentData = weeklyData[weekNumber]?.[studentId];
+            if (!studentData) return 0;
+
+            let total = 0;
+
+            // حساب نقاط الحلقة (40% = 10% لكل يوم)
+            halaqahDays.forEach(day => {
+                if (studentData.attendance[day]) {
+                    if (studentData.attendance[day].حضور) {
+                        total += 5; // 5% للحضور
+                    }
+                    if (studentData.attendance[day].تسميع) {
+                        total += 5; // 5% للتسميع
+                    }
+                }
+            });
+
+            // الطلعة (15%)
+            if (studentData.outing) {
+                total += 15;
+            }
+
+            // القلطة (10%)
+            if (studentData.qalta) {
+                total += 10;
+            }
+
+            // الدرس (15%)
+            if (studentData.lesson) {
+                total += 15;
+            }
+
+            // الدراسة الذاتية (20% = 10% لكل جزء)
+            if (studentData.selfStudy) {
+                if (studentData.selfStudy.first) total += 10;
+                if (studentData.selfStudy.second) total += 10;
+            }
+
+            // التحديات - نقاط إضافية
+            if (studentData.challenges) {
+                // التحدي الأول
+                if (studentData.challenges.c1 === 'gold') total += 15;
+                else if (studentData.challenges.c1 === 'silver') total += 10;
+                else if (studentData.challenges.c1 === 'bronze') total += 5;
+
+                // التحدي الثاني
+                if (studentData.challenges.c2 === 'gold') total += 15;
+                else if (studentData.challenges.c2 === 'silver') total += 10;
+                else if (studentData.challenges.c2 === 'bronze') total += 5;
+            }
+
+            return total;
+        }
+
+        // دالة حساب متوسط الأسبوعين للطالب
+        function calculateStudentAverageForPeriod(studentId, periodNumber) {
+            const weeks = getWeeksForPeriod(periodNumber);
+            const week1Percentage = calculateStudentPercentage(studentId, weeks.start);
+            const week2Percentage = calculateStudentPercentage(studentId, weeks.end);
+            return (week1Percentage + week2Percentage) / 2;
+        }
+
+        // تعريف متغيرات عامة
+        let currentPeriod = 1;
+        const WEEKS_PER_PERIOD = 2;
+        
+        // تعريف تاريخ بداية الفترة الأولى (30 جمادى الأول 1445)
+        const startDate = moment('1445/05/30', 'iYYYY/iMM/iDD');
+
+        // دالة حساب تواريخ الأسبوع
+        function getWeekDates(weekNumber) {
+            // حساب تاريخ بداية الأسبوع
+            const weekStart = moment(startDate).add((weekNumber - 1) * 7, 'days');
+            const weekEnd = moment(weekStart).add(6, 'days');
+
+            // تنسيق التواريخ بالهجري
+            return {
+                start: weekStart.format('iDD iMMMM iYYYY'),
+                end: weekEnd.format('iDD iMMMM iYYYY')
+            };
+        }
+
+        // دالة حساب أسابيع الفترة
+        function getWeeksForPeriod(periodNumber) {
+            return {
+                start: ((periodNumber - 1) * 2) + 1,
+                end: periodNumber * 2
+            };
+        }
+
+        // دالة عرض مجموعة معينة
+        function renderGroup(groupNumber, weekNumber) {
+            const tbody = document.getElementById('studentsTableBody');
+            const groupStudents = students.filter(student => student.group === groupNumber);
+            
+            if (groupStudents.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.setAttribute('data-group', groupNumber);
+                emptyRow.setAttribute('data-week', weekNumber);
+                emptyRow.innerHTML = `
+                    <td class="group-cell">مجموعة ${groupNames[groupNumber]}</td>
+                    <td colspan="11"></td>
+                `;
+                tbody.appendChild(emptyRow);
+                return;
+            }
+
+            groupStudents.forEach((student, index) => {
+                const studentData = weeklyData[weekNumber]?.[student.id] || initializeStudentWeekData(student.id, weekNumber);
+                const row = document.createElement('tr');
+                row.setAttribute('data-group', groupNumber);
+                row.setAttribute('data-week', weekNumber);
+                
+                let rowHTML = '';
+                if (index === 0) {
+                    rowHTML = `<td class="group-cell" rowspan="${groupStudents.length}">مجموعة ${groupNames[groupNumber]}</td>`;
+                }
+                
+                // حساب النسبة المئوية
+                let percentage;
+                const weeks = getWeeksForPeriod(currentPeriod);
+                if (weekNumber === weeks.end) { // إذا كان الأسبوع الثاني
+                    percentage = calculateStudentAverageForPeriod(student.id, currentPeriod);
+                } else {
+                    percentage = calculateStudentPercentage(student.id, weekNumber);
+                }
+
+                rowHTML += `
+                    <td>
+                        <div class="student-name">${student.name || 'بدون اسم'}</div>
+                    </td>
+                    ${halaqahDays.map(day => `
+                        <td>
+                            <div class="checkbox-pair">
+                                <label>
+                                    <input type="checkbox" 
+                                        ${studentData.attendance[day]?.حضور ? 'checked' : ''}
+                                        onchange="toggleHalaqah('${student.id}', '${day}', 'حضور', ${weekNumber})"
+                                    >
+                                    ✓
+                                </label>
+                                <label>
+                                    <input type="checkbox" 
+                                        ${studentData.attendance[day]?.تسميع ? 'checked' : ''}
+                                        onchange="toggleHalaqah('${student.id}', '${day}', 'تسميع', ${weekNumber})"
+                                    >
+                                    ✓
+                                </label>
+                            </div>
+                        </td>
+                    `).join('')}
+                    <td class="qalta-cell">
+                        <input type="checkbox" class="qalta-checkbox" 
+                            ${studentData.qalta ? 'checked' : ''}
+                            onchange="toggleQalta('${student.id}', ${weekNumber})"
+                        >
+                    </td>
+                    <td class="lesson-cell">
+                        <input type="checkbox" class="lesson-checkbox" 
+                            ${studentData.lesson ? 'checked' : ''}
+                            onchange="toggleLesson('${student.id}', ${weekNumber})"
+                        >
+                    </td>
+                    <td class="outing-cell">
+                        <input type="checkbox" class="outing-checkbox" 
+                            ${studentData.outing ? 'checked' : ''}
+                            onchange="toggleOuting('${student.id}', ${weekNumber})"
+                        >
+                    </td>
+                    <td class="self-cell">
+                        <div class="self-pair">
+                            <input type="checkbox" 
+                                ${studentData.selfStudy?.first ? 'checked' : ''}
+                                onchange="toggleSelf('${student.id}', 'first', ${weekNumber})"
+                            >
+                            <input type="checkbox" 
+                                ${studentData.selfStudy?.second ? 'checked' : ''}
+                                onchange="toggleSelf('${student.id}', 'second', ${weekNumber})"
+                            >
+                        </div>
+                    </td>
+                    <td class="challenges-cell">
+                        <div class="challenges-pair">
+                            <select class="medal-select" onchange="toggleChallenge('${student.id}', 1, this.value, ${weekNumber})">
+                                <option value="" ${!studentData.challenges?.c1 ? 'selected' : ''}>--</option>
+                                <option value="gold" ${studentData.challenges?.c1 === 'gold' ? 'selected' : ''}>ذهبي</option>
+                                <option value="silver" ${studentData.challenges?.c1 === 'silver' ? 'selected' : ''}>فضي</option>
+                                <option value="bronze" ${studentData.challenges?.c1 === 'bronze' ? 'selected' : ''}>برونزي</option>
+                            </select>
+                            <select class="medal-select" onchange="toggleChallenge('${student.id}', 2, this.value, ${weekNumber})">
+                                <option value="" ${!studentData.challenges?.c2 ? 'selected' : ''}>--</option>
+                                <option value="gold" ${studentData.challenges?.c2 === 'gold' ? 'selected' : ''}>ذهبي</option>
+                                <option value="silver" ${studentData.challenges?.c2 === 'silver' ? 'selected' : ''}>فضي</option>
+                                <option value="bronze" ${studentData.challenges?.c2 === 'bronze' ? 'selected' : ''}>برونزي</option>
+                            </select>
+                        </div>
+                    </td>
+                    <td class="total-cell">
+                        <span class="${getPercentageClass(percentage)}">
+                            ${percentage.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                row.innerHTML = rowHTML;
+                tbody.appendChild(row);
+            });
+
+            if (groupStudents.length > 0) {
+                const totalRow = document.createElement('tr');
+                totalRow.setAttribute('data-group', groupNumber);
+                totalRow.setAttribute('data-week', weekNumber);
+                totalRow.classList.add('total-row');
+                
+                // حساب متوسط المجموعة
+                let totalPercentage;
+                const weeks = getWeeksForPeriod(currentPeriod);
+                if (weekNumber === weeks.end) { // إذا كان الأسبوع الثاني
+                    totalPercentage = groupStudents.reduce((sum, student) => 
+                        sum + calculateStudentAverageForPeriod(student.id, currentPeriod), 0) / groupStudents.length;
+                } else {
+                    totalPercentage = groupStudents.reduce((sum, student) => 
+                        sum + calculateStudentPercentage(student.id, weekNumber), 0) / groupStudents.length;
+                }
+                
+                totalRow.innerHTML = `
+                    <td colspan="2">مجموع مجموعة ${groupNames[groupNumber]}</td>
+                    ${halaqahDays.map(() => '<td>-</td>').join('')}
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="total-cell">
+                        <span class="${getPercentageClass(totalPercentage)}">
+                            ${totalPercentage.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(totalRow);
+            }
+        }
+
+        // دالة عرض جميع المجموعات
+        function renderAllGroups() {
+            const tbody = document.getElementById('studentsTableBody');
+            tbody.innerHTML = '';
+
+            const weeks = getWeeksForPeriod(currentPeriod);
+            
+            for (let week = weeks.start; week <= weeks.end; week++) {
+                const weekDates = getWeekDates(week);
+                
+                const weekHeader = document.createElement('tr');
+                weekHeader.classList.add('week-header');
+                weekHeader.innerHTML = `
+                    <td colspan="12" class="week-header-cell">
+                        الأسبوع ${week} (${weekDates.start} - ${weekDates.end})
+                    </td>
+                `;
+                tbody.appendChild(weekHeader);
+
+                // عرض المجموعات الثلاث فقط
+                for (let group = 1; group <= 3; group++) {
+                    renderGroup(group, week);
+                }
+            }
+        }
+
+        let editMode = false;
+
+        // دالة عرض نافذة التحرير
+        function showEditModal() {
+            const modal = document.getElementById('editModal');
+            const container = document.getElementById('studentsListContainer');
+            container.innerHTML = '';
+            
+            // إضافة زر إضافة طالب جديد
+            const addStudentButton = document.createElement('button');
+            addStudentButton.className = 'add-student-btn';
+            addStudentButton.onclick = function() {
+                const name = prompt('أدخل اسم الطالب:');
+                if (name) {
+                    addStudent(name);
+                    showEditModal(); // تحديث النافذة
+                }
+            };
+            addStudentButton.innerHTML = 'إضافة طالب جديد';
+            container.appendChild(addStudentButton);
+            
+            // إنشاء قائمة للطلاب
+            const studentsList = document.createElement('div');
+            studentsList.className = 'students-list';
+            
+            // تنظيم الطلاب حسب المجموعات
+            const groupedStudents = {};
+            students.forEach(student => {
+                if (!groupedStudents[student.group]) {
+                    groupedStudents[student.group] = [];
+                }
+                groupedStudents[student.group].push(student);
+            });
+
+            // عرض الطلاب حسب المجموعات
+            for (let group = 1; group <= 3; group++) {
+                const groupStudents = groupedStudents[group] || [];
+                
+                // إنشاء عنوان المجموعة
+                const groupHeader = document.createElement('div');
+                groupHeader.className = 'group-header';
+                groupHeader.innerHTML = `المجموعة ${groupNames[group]}`;
+                studentsList.appendChild(groupHeader);
+
+                // عرض طلاب المجموعة
+                if (groupStudents.length > 0) {
+                    groupStudents.forEach(student => {
+                        const studentItem = document.createElement('div');
+                        studentItem.className = 'student-list-item';
+                        studentItem.innerHTML = `
+                            <div class="student-name">
+                                <span onclick="deleteStudent('${student.id}')" class="delete-icon">×</span>
+                                <span>${student.name}</span>
+                                <select class="group-select" onchange="updateStudentGroup('${student.id}', this.value)">
+                                    ${Array.from({length: 3}, (_, i) => i + 1)
+                                        .map(g => `<option value="${g}" ${g === student.group ? 'selected' : ''}>
+                                            المجموعة ${groupNames[g]}
+                                        </option>`).join('')}
+                                </select>
+                            </div>
+                        `;
+                        studentsList.appendChild(studentItem);
+                    });
+                } else {
+                    const emptyMessage = document.createElement('div');
+                    emptyMessage.className = 'empty-group-message';
+                    emptyMessage.textContent = 'لا يوجد طلاب في هذه المجموعة';
+                    studentsList.appendChild(emptyMessage);
+                }
+            }
+            
+            container.appendChild(studentsList);
+            modal.style.display = 'block';
+        }
+
+        // دالة إغلاق نافذة التحرير
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'none';
+        }
+
+        // دالة إغلاق النافذة المنبثقة عند النقر خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        }
+
+        // دالة إظهار إشارة الحفظ
+        function showSaveIndicator() {
+            const indicator = document.querySelector('.save-indicator');
+            indicator.style.display = 'block';
+            // إخفاء الإشارة بعد ثانية
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 1000);
+        }
+
+        // دالة تحديد فترة
+        async function selectPeriod(periodNumber) {
+            currentPeriod = periodNumber;
+            document.getElementById('periodSelector').style.display = 'none';
+            document.getElementById('mainInterface').classList.add('active');
+
+            // تحميل بيانات الطلاب
+            students = await loadStudentsList() || [];
+            
+            // تحميل بيانات الأسابيع للفترة المحددة
+            const weeks = getWeeksForPeriod(periodNumber);
+            for (const weekNumber of weeks) {
+                weeklyData[weekNumber] = await loadWeekData(weekNumber) || {};
+            }
+
+            // عرض البيانات
+            renderAllGroups();
+        }
+
+        // عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            // إخفاء الواجهة الرئيسية في البداية
+            document.getElementById('mainInterface').classList.remove('active');
+        });
+
+        // تحميل البيانات عند بدء التطبيق
+        window.addEventListener('load', function() {
+            loadStudentsList();
+            const weeks = getWeeksForPeriod(1);
+            for (let week = weeks.start; week <= weeks.end; week++) {
+                loadWeekData(week);
+            }
+            renderAllGroups();
+        });
+
+        // حفظ البيانات عند إغلاق الصفحة
+        window.addEventListener('beforeunload', function() {
+            saveStudentsList();
+            const weeks = getWeeksForPeriod(currentPeriod);
+            for (let week = weeks.start; week <= weeks.end; week++) {
+                saveWeekData(week);
+            }
+        });
+
+        // دالة تحديث مجموعة الطالب
+        function updateStudentGroup(studentId, group) {
+            const student = students.find(s => s.id === studentId);
+            if (student) {
+                student.group = parseInt(group);
+                saveStudentsList();
+                renderAllGroups();
+                showEditModal(); // تحديث النافذة
+            }
+        }
+
+        // دالة مسح جميع البيانات
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من مسح جميع البيانات؟ لا يمكن التراجع عن هذه العملية.')) {
+                // مسح البيانات من localStorage
+                localStorage.removeItem('studentsList');
+                Object.keys(weeklyData).forEach(week => {
+                    localStorage.removeItem(`week${week}`);
+                });
+                
+                // إعادة تهيئة المتغيرات
+                students = [];
+                weeklyData = {};
+                
+                // إعادة تحميل الصفحة
+                alert('تم مسح جميع البيانات بنجاح');
+                location.reload();
+            }
+        }
+
+        // دالة حساب نقاط التحدي
+        function getChallengePoints(medal) {
+            switch (medal) {
+                case 'gold':
+                    return 10;
+                case 'silver':
+                    return 5;
+                case 'bronze':
+                    return 2;
+                default:
+                    return 0;
+            }
+        }
+
+        // دالة حساب متوسط الفترة
+        function calculatePeriodAverage(studentId, periodNumber) {
+            const weeks = getWeeksForPeriod(periodNumber);
+            const week1Percentage = calculateStudentPercentage(studentId, weeks.start);
+            const week2Percentage = calculateStudentPercentage(studentId, weeks.end);
+            return (week1Percentage + week2Percentage) / 2;
+        }
+
+        // دالة عرض المجموع الكلي
+        function showTotalSummary() {
+            const modal = document.getElementById('totalSummaryModal');
+            const tbody = document.getElementById('totalSummaryTableBody');
+            tbody.innerHTML = '';
+
+            // ترتيب الطلاب حسب المجموعات
+            const sortedStudents = [...students].sort((a, b) => a.group - b.group);
+
+            sortedStudents.forEach(student => {
+                const row = document.createElement('tr');
+                
+                // حساب متوسط كل فترة
+                const periodAverages = [];
+                for (let period = 1; period <= 5; period++) {
+                    const weeks = getWeeksForPeriod(period);
+                    let week1Data = weeklyData[weeks.start]?.[student.id];
+                    let week2Data = weeklyData[weeks.end]?.[student.id];
+                    
+                    let week1Percentage = week1Data ? calculateStudentPercentage(student.id, weeks.start) : 0;
+                    let week2Percentage = week2Data ? calculateStudentPercentage(student.id, weeks.end) : 0;
+                    
+                    // إذا كان هناك بيانات لأي من الأسبوعين، نحسب المتوسط
+                    if (week1Data || week2Data) {
+                        const periodAverage = (week1Percentage + week2Percentage) / 2;
+                        periodAverages.push(periodAverage);
+                    } else {
+                        periodAverages.push(0); // إذا لم تكن هناك بيانات نضع صفر
+                    }
+                }
+
+                // حساب المجموع الكلي (متوسط الفترات التي لها بيانات فقط)
+                const validPeriods = periodAverages.filter(avg => avg > 0);
+                const totalAverage = validPeriods.length > 0 ? 
+                    validPeriods.reduce((sum, avg) => sum + avg, 0) / validPeriods.length : 0;
+
+                row.innerHTML = `
+                    <td>مجموعة ${groupNames[student.group]}</td>
+                    <td>${student.name}</td>
+                    ${periodAverages.map(avg => `
+                        <td class="period-average">
+                            <span class="${getPercentageClass(avg)}">
+                                ${avg.toFixed(1)}%
+                            </span>
+                        </td>
+                    `).join('')}
+                    <td class="total-average">
+                        <span class="${getPercentageClass(totalAverage)}">
+                            ${totalAverage.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // إضافة صف المجموع لكل مجموعة
+            const groups = [...new Set(students.map(s => s.group))];
+            groups.forEach(groupNumber => {
+                const groupStudents = students.filter(s => s.group === groupNumber);
+                const groupRow = document.createElement('tr');
+                groupRow.classList.add('group-total');
+
+                // حساب متوسط المجموعة لكل فترة
+                const groupPeriodAverages = [];
+                for (let period = 1; period <= 5; period++) {
+                    const weeks = getWeeksForPeriod(period);
+                    let periodTotal = 0;
+                    let validStudentCount = 0;
+
+                    groupStudents.forEach(student => {
+                        let week1Data = weeklyData[weeks.start]?.[student.id];
+                        let week2Data = weeklyData[weeks.end]?.[student.id];
+                        
+                        if (week1Data || week2Data) {
+                            let week1Percentage = week1Data ? calculateStudentPercentage(student.id, weeks.start) : 0;
+                            let week2Percentage = week2Data ? calculateStudentPercentage(student.id, weeks.end) : 0;
+                            periodTotal += (week1Percentage + week2Percentage) / 2;
+                            validStudentCount++;
+                        }
+                    });
+
+                    const periodAverage = validStudentCount > 0 ? periodTotal / validStudentCount : 0;
+                    groupPeriodAverages.push(periodAverage);
+                }
+
+                // حساب المجموع الكلي للمجموعة (متوسط الفترات التي لها بيانات فقط)
+                const validGroupPeriods = groupPeriodAverages.filter(avg => avg > 0);
+                const groupTotalAverage = validGroupPeriods.length > 0 ? 
+                    validGroupPeriods.reduce((sum, avg) => sum + avg, 0) / validGroupPeriods.length : 0;
+
+                groupRow.innerHTML = `
+                    <td colspan="2">مجموع مجموعة ${groupNames[groupNumber]}</td>
+                    ${groupPeriodAverages.map(avg => `
+                        <td class="period-average">
+                            <span class="${getPercentageClass(avg)}">
+                                ${avg.toFixed(1)}%
+                            </span>
+                        </td>
+                    `).join('')}
+                    <td class="total-average">
+                        <span class="${getPercentageClass(groupTotalAverage)}">
+                            ${groupTotalAverage.toFixed(1)}%
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(groupRow);
+            });
+
+            modal.style.display = 'block';
+        }
+
+        // دالة إغلاق نافذة المجموع الكلي
+        function closeTotalSummary() {
+            document.getElementById('totalSummaryModal').style.display = 'none';
+        }
+
+        // إغلاق النافذة عند النقر خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('totalSummaryModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // دالة عرض نافذة مشاركة البيانات
+        async function showShareModal() {
+            const modal = document.getElementById('shareModal');
+            const shareLinkInput = document.getElementById('shareLink');
+            
+            try {
+                // إنشاء رابط مشاركة مختصر
+                const shareData = {
+                    userId: userId,
+                    timestamp: Date.now()
+                };
+                
+                // إنشاء رابط محلي
+                const currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('share', userId);
+                shareLinkInput.value = currentUrl.toString();
+                
+                modal.style.display = 'block';
+            } catch (error) {
+                console.error('Error generating share link:', error);
+                alert('حدث خطأ أثناء إنشاء رابط المشاركة');
+            }
+        }
+
+        // دالة إغلاق نافذة مشاركة البيانات
+        function closeShareModal() {
+            const modal = document.getElementById('shareModal');
+            modal.style.display = 'none';
+        }
+
+        // دالة نسخ الرابط
+        function copyShareLink() {
+            const shareLinkInput = document.getElementById('shareLink');
+            shareLinkInput.select();
+            document.execCommand('copy');
+            alert('تم نسخ الرابط بنجاح!');
+        }
+
+        // دالة التحقق من وجود بيانات مشتركة عند تحميل الصفحة
+        async function checkSharedData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const shareId = urlParams.get('share');
+            
+            if (shareId) {
+                try {
+                    // تحميل بيانات المستخدم المشارك
+                    const snapshot = await database.ref(`users/${shareId}`).once('value');
+                    const sharedData = snapshot.val();
+                    
+                    if (sharedData) {
+                        // حفظ البيانات المشتركة في حساب المستخدم الحالي
+                        await database.ref(`users/${userId}`).set(sharedData);
+                        
+                        // تحديث التخزين المحلي
+                        if (sharedData.studentsList) {
+                            localStorage.setItem('studentsList', JSON.stringify(sharedData.studentsList));
+                            students = sharedData.studentsList;
+                        }
+                        
+                        if (sharedData.weeks) {
+                            Object.entries(sharedData.weeks).forEach(([week, data]) => {
+                                localStorage.setItem(`week${week}`, JSON.stringify(data));
+                                weeklyData[week] = data;
+                            });
+                        }
+                        
+                        // إزالة معلمة المشاركة من URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                        alert('تم استيراد البيانات المشتركة بنجاح!');
+                        renderAllGroups();
+                    }
+                } catch (error) {
+                    console.error('Error loading shared data:', error);
+                    alert('حدث خطأ أثناء تحميل البيانات المشتركة');
+                }
+            }
+        }
+
+        // إضافة استدعاء دالة التحقق من البيانات المشتركة عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            checkSharedData();
+        });
+    </script>
+</body>
+</html>
