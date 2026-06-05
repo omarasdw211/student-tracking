@@ -1,11 +1,12 @@
 FROM python:3.11-slim
 
-# Install ffmpeg + nodejs (yt-dlp needs nodejs to bypass YouTube bot detection)
+# Install ffmpeg + nodejs (yt-dlp needs nodejs JS runtime for YouTube)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     nodejs \
     npm \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && node --version && which node
 
 WORKDIR /app
 

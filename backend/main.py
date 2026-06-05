@@ -95,6 +95,7 @@ async def video_info(body: VideoURL):
     try:
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp", "--dump-json", "--no-playlist",
+            "--js-runtimes", "nodejs",
             "--socket-timeout", "15",
             "--retries", "2",
             url,
@@ -147,13 +148,14 @@ async def download_video(body: DownloadRequest):
         "--merge-output-format", "mp4",
         "-o", output_template,
         "--no-playlist",
+        "--js-runtimes", "nodejs",
         "--socket-timeout", "30",
         "--retries", "3",
     ]
 
-    # tv_embedded bypasses YouTube's IP-based blocking on datacenter servers
+    # Use mweb (mobile web) client for YouTube — works better from server IPs with JS runtime
     if _is_youtube(body.url):
-        cmd += ["--extractor-args", "youtube:player_client=tv_embedded"]
+        cmd += ["--extractor-args", "youtube:player_client=mweb,ios"]
 
     cmd.append(body.url.strip())
 
