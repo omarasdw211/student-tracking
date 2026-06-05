@@ -382,29 +382,6 @@
     </div>
 
     <!-- ══════════════ CARD 2: Audio Separator ══════════════ -->
-    <!-- YouTube Setup Instructions -->
-    <div class="card" id="yt-setup-card">
-        <div class="card-header" style="background:#e67e22;">
-            <span>&#9888;</span>
-            <span>إعداد YouTube (مطلوب مرة واحدة)</span>
-        </div>
-        <div class="card-body" style="font-size:0.9rem; line-height:1.9; color:#444;">
-            <p>YouTube يحجب التنزيل من السرفرات. الحل: أضف <strong>Cookies</strong> من متصفحك مرة واحدة.</p>
-            <ol style="padding-right:20px; margin-top:10px;">
-                <li>افتح <strong>Chrome على الكمبيوتر</strong> وسجّل دخولك على YouTube</li>
-                <li>ثبّت إضافة: <strong>"Get cookies.txt LOCALLY"</strong> من متجر Chrome</li>
-                <li>افتح <strong>youtube.com</strong> ثم اضغط على الإضافة واختر <strong>Export</strong></li>
-                <li>انسخ كل النص المُصدَّر</li>
-                <li>اذهب إلى Railway ← مشروعك ← <strong>Variables</strong> ← أضف متغير:</li>
-            </ol>
-            <div style="background:#1e1e1e; color:#a8ff78; border-radius:6px; padding:10px 14px; font-family:monospace; margin-top:8px; font-size:0.85rem; direction:ltr; text-align:left;">
-                Name: <strong>YT_COOKIES</strong><br>
-                Value: <em>[الصق نص الـ cookies هنا]</em>
-            </div>
-            <p style="margin-top:10px; color:#888; font-size:0.82rem;">بعد الحفظ، Railway يعيد التشغيل تلقائياً وتصير يوتيوب تشتغل.</p>
-        </div>
-    </div>
-
     <div class="card">
         <div class="card-header green">
             <span>&#127925;</span>
@@ -579,30 +556,15 @@
                 throw new Error(data.detail || 'فشل التنزيل');
             }
 
-            // Check if server returned a direct URL (YouTube via Piped)
-            const contentType = res.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-                const data = await res.json();
-                const a = document.createElement('a');
-                a.href = data.download_url;
-                a.download = data.filename || 'video.mp4';
-                a.target = '_blank';
-                a.rel = 'noopener';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            } else {
-                // File streamed through server (non-YouTube)
-                const blob = await res.blob();
-                const objectUrl = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = objectUrl;
-                a.download = 'video.mp4';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(objectUrl);
-            }
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = 'video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
 
             hideProgress('dl-progress');
             showMsg('dl-msg', 'تم! إذا لم يبدأ التنزيل تلقائياً تحقق من الإشعارات أو انتظر قليلاً.', 'success');

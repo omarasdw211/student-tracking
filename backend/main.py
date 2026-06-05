@@ -201,14 +201,6 @@ async def download_video(body: DownloadRequest):
     output_template = str(DOWNLOADS_DIR / f"{job_id}.%(ext)s")
     fmt = _FMT_MAP.get(quality, _FMT_MAP["max"])
 
-    # YouTube requires cookies when running from a datacenter server
-    if _is_youtube(url):
-        if not COOKIES_FILE.exists():
-            raise HTTPException(
-                status_code=403,
-                detail="YouTube يحجب التنزيل من السرفر. يجب إضافة YT_COOKIES في متغيرات Railway — راجع التعليمات أسفل الصفحة."
-            )
-
     cmd = [
         "yt-dlp",
         "-f", fmt,
@@ -219,7 +211,7 @@ async def download_video(body: DownloadRequest):
         "--socket-timeout", "30",
         "--retries", "3",
     ]
-    if _is_youtube(url) and COOKIES_FILE.exists():
+    if COOKIES_FILE.exists():
         cmd += ["--cookies", str(COOKIES_FILE)]
     cmd.append(url)
 
