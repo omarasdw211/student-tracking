@@ -2,14 +2,15 @@ import asyncio
 import glob
 import json
 import os
+import re
 import shutil
-import subprocess
 import uuid
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.background import BackgroundTask
@@ -31,6 +32,20 @@ SEPARATED_DIR = BASE_DIR / "separated"
 for d in [UPLOADS_DIR, DOWNLOADS_DIR, SEPARATED_DIR]:
     d.mkdir(exist_ok=True)
 
+COBALT_API = "https://api.cobalt.tools/"
+COBALT_HEADERS = {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+}
+
+QUALITY_OPTIONS = [
+    {"format_id": "max",  "label": "أعلى جودة"},
+    {"format_id": "1080", "label": "1080p"},
+    {"format_id": "720",  "label": "720p"},
+    {"format_id": "480",  "label": "480p"},
+    {"format_id": "360",  "label": "360p"},
+]
+
 
 class VideoURL(BaseModel):
     url: str
@@ -39,6 +54,10 @@ class VideoURL(BaseModel):
 class DownloadRequest(BaseModel):
     url: str
     format_id: str
+
+
+def _is_youtube(url: str) -> bool:
+    return bool(re.search(r"(youtube\.com|youtu\.be)", url))
 
 
 def _cleanup(*paths: str):
@@ -52,120 +71,98 @@ def _cleanup(*paths: str):
             pass
 
 
-def _pick_formats(raw_formats: list) -> list:
-    seen_heights = set()
-    result = []
-    priority = ["mp4", "webm"]
-
-    for fmt in reversed(raw_formats):
-        height = fmt.get("height")
-        ext = fmt.get("ext", "")
-        vcodec = fmt.get("vcodec", "none")
-        acodec = fmt.get("acodec", "none")
-
-        if vcodec == "none" or height is None:
-            continue
-        if ext not in priority:
-            continue
-        if height in seen_heights:
-            continue
-
-        seen_heights.add(height)
-        label = f"{height}p {ext.upper()}"
-        # prefer format that has audio merged
-        if acodec != "none":
-            fmt_id = fmt["format_id"]
-        else:
-            fmt_id = f"{fmt['format_id']}+bestaudio[ext=m4a]/bestaudio"
-
-        result.append({"format_id": fmt_id, "label": label, "ext": ext})
-
-    result.sort(key=lambda x: int(x["label"].split("p")[0]), reverse=True)
-    return result[:5]
-
+# ─── Video Info ────────────────────────────────────────────────────────────────
 
 @app.post("/api/video-info")
 async def video_info(body: VideoURL):
+    url = body.url.strip()
+
+    # YouTube → use oEmbed (no auth required, works from any IP)
+    if _is_youtube(url):
+        try:
+            async with httpx.AsyncClient(timeout=15) as client:
+                r = await client.get(
+                    "https://www.youtube.com/oembed",
+                    params={"url": url, "format": "json"},
+                )
+            if r.status_code == 200:
+                data = r.json()
+                return {
+                    "title": data.get("title", "فيديو YouTube"),
+                    "thumbnail": data.get("thumbnail_url", ""),
+                    "duration": 0,
+                    "formats": QUALITY_OPTIONS,
+                }
+        except Exception:
+            pass
+        # fallback if oEmbed fails
+        return {"title": "فيديو YouTube", "thumbnail": "", "duration": 0, "formats": QUALITY_OPTIONS}
+
+    # Other platforms → use yt-dlp (no IP blocking issues on non-YouTube)
     try:
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp", "--dump-json", "--no-playlist",
-            "--extractor-args", "youtube:player_client=ios",
-            "--socket-timeout", "20",
+            "--socket-timeout", "15",
             "--retries", "2",
-            body.url,
+            url,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=90)
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=60)
     except asyncio.TimeoutError:
         proc.kill()
-        raise HTTPException(status_code=408, detail="انتهى وقت الاستجابة، الرجاء المحاولة مرة أخرى")
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="yt-dlp غير مثبت")
+        return {"title": "فيديو", "thumbnail": "", "duration": 0, "formats": QUALITY_OPTIONS}
+    except Exception:
+        return {"title": "فيديو", "thumbnail": "", "duration": 0, "formats": QUALITY_OPTIONS}
 
-    if proc.returncode != 0:
-        err = stderr.decode(errors="replace")
-        raise HTTPException(status_code=400, detail=f"تعذّر جلب معلومات الفيديو: {err[:300]}")
+    if proc.returncode == 0:
+        try:
+            info = json.loads(stdout.decode())
+            return {
+                "title": info.get("title", "فيديو"),
+                "thumbnail": info.get("thumbnail", ""),
+                "duration": info.get("duration", 0),
+                "formats": QUALITY_OPTIONS,
+            }
+        except Exception:
+            pass
 
-    try:
-        info = json.loads(stdout.decode())
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="استجابة غير متوقعة من yt-dlp")
+    return {"title": "فيديو", "thumbnail": "", "duration": 0, "formats": QUALITY_OPTIONS}
 
-    formats = _pick_formats(info.get("formats", []))
-    if not formats:
-        formats = [{"format_id": "best", "label": "أفضل جودة متاحة", "ext": "mp4"}]
 
-    return {
-        "title": info.get("title", "بدون عنوان"),
-        "thumbnail": info.get("thumbnail", ""),
-        "duration": info.get("duration", 0),
-        "formats": formats,
-    }
-
+# ─── Download via cobalt API ───────────────────────────────────────────────────
 
 @app.post("/api/download")
 async def download_video(body: DownloadRequest):
-    job_id = str(uuid.uuid4())
-    output_template = str(DOWNLOADS_DIR / f"{job_id}.%(ext)s")
+    quality = body.format_id if body.format_id != "max" else "max"
+
+    payload = {"url": body.url.strip(), "videoQuality": quality}
 
     try:
-        proc = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "-f", body.format_id,
-            "--merge-output-format", "mp4",
-            "-o", output_template,
-            "--no-playlist",
-            "--extractor-args", "youtube:player_client=ios",
-            "--socket-timeout", "20",
-            "--retries", "3",
-            body.url,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
-    except asyncio.TimeoutError:
-        proc.kill()
-        raise HTTPException(status_code=408, detail="انتهى وقت التنزيل، جرب جودة أقل")
-    except FileNotFoundError:
-        raise HTTPException(status_code=500, detail="yt-dlp غير مثبت")
+        async with httpx.AsyncClient(timeout=30) as client:
+            r = await client.post(COBALT_API, json=payload, headers=COBALT_HEADERS)
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"تعذّر الاتصال بخدمة التنزيل: {e}")
 
-    if proc.returncode != 0:
-        err = stderr.decode(errors="replace")
-        raise HTTPException(status_code=400, detail=f"فشل التنزيل: {err[:300]}")
+    if r.status_code != 200:
+        raise HTTPException(status_code=r.status_code, detail="رفضت خدمة التنزيل الطلب، تحقق من الرابط")
 
-    matches = glob.glob(str(DOWNLOADS_DIR / f"{job_id}.*"))
-    if not matches:
-        raise HTTPException(status_code=500, detail="لم يُعثر على الملف المحمَّل")
+    data = r.json()
+    status = data.get("status")
 
-    file_path = matches[0]
-    return FileResponse(
-        file_path,
-        media_type="video/mp4",
-        filename="video.mp4",
-        background=BackgroundTask(_cleanup, file_path),
-    )
+    if status in ("redirect", "tunnel"):
+        return JSONResponse({"download_url": data["url"], "filename": data.get("filename", "video.mp4")})
 
+    if status == "picker":
+        items = data.get("picker", [])
+        if items:
+            return JSONResponse({"download_url": items[0]["url"], "filename": "video.mp4"})
+
+    error_code = data.get("error", {}).get("code", status or "unknown")
+    raise HTTPException(status_code=400, detail=f"فشل التنزيل: {error_code}")
+
+
+# ─── Audio Separation via Spleeter ────────────────────────────────────────────
 
 @app.post("/api/separate-audio")
 async def separate_audio(file: UploadFile = File(...)):
@@ -174,12 +171,10 @@ async def separate_audio(file: UploadFile = File(...)):
     sep_output_dir = SEPARATED_DIR / job_id
     result_path = DOWNLOADS_DIR / f"{job_id}_vocals.mp4"
 
-    # Save uploaded file
     content = await file.read()
     upload_path.write_bytes(content)
 
     try:
-        # Run Spleeter to separate vocals from accompaniment
         proc = await asyncio.create_subprocess_exec(
             "spleeter", "separate",
             "-i", str(upload_path),
@@ -194,23 +189,15 @@ async def separate_audio(file: UploadFile = File(...)):
             err = stderr.decode(errors="replace")
             raise HTTPException(status_code=500, detail=f"فشل فصل الصوت: {err[:300]}")
 
-        # Find the vocals file produced by Spleeter
         stem_name = Path(upload_path.name).stem
         vocals_path = sep_output_dir / stem_name / "vocals.wav"
 
         if not vocals_path.exists():
-            # Try without job_id prefix
-            alt_name = "_".join(upload_path.stem.split("_")[1:]) if "_" in upload_path.stem else upload_path.stem
-            vocals_path = sep_output_dir / alt_name / "vocals.wav"
-
-        if not vocals_path.exists():
-            # Fallback: find any vocals.wav in the output directory
             found = list(sep_output_dir.rglob("vocals.wav"))
             if not found:
                 raise HTTPException(status_code=500, detail="لم يُنتج Spleeter ملف الصوت")
             vocals_path = found[0]
 
-        # Merge vocals audio back with original video using FFmpeg
         ffmpeg_proc = await asyncio.create_subprocess_exec(
             "ffmpeg", "-y",
             "-i", str(upload_path),
@@ -244,9 +231,9 @@ async def separate_audio(file: UploadFile = File(...)):
     )
 
 
-# Serve static files from the project root (one level above backend/)
-# Works both locally and in Docker (where WORKDIR is /app/backend)
+# ─── Static Files ─────────────────────────────────────────────────────────────
+
 _static_dir = BASE_DIR.parent
 if not (_static_dir / "video-tools.html").exists():
-    _static_dir = Path("/app")  # Docker fallback
+    _static_dir = Path("/app")
 app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")

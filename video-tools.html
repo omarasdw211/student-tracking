@@ -551,23 +551,24 @@
                 body: JSON.stringify({ url, format_id: formatId }),
             });
 
+            const data = await res.json().catch(() => ({}));
+
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
                 throw new Error(data.detail || 'فشل التنزيل');
             }
 
-            const blob = await res.blob();
-            const objectUrl = URL.createObjectURL(blob);
+            // cobalt returns a direct download URL — open it in a new tab
             const a = document.createElement('a');
-            a.href = objectUrl;
-            a.download = 'video.mp4';
+            a.href = data.download_url;
+            a.download = data.filename || 'video.mp4';
+            a.target = '_blank';
+            a.rel = 'noopener';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            URL.revokeObjectURL(objectUrl);
 
             hideProgress('dl-progress');
-            showMsg('dl-msg', 'تم تنزيل الفيديو بنجاح!', 'success');
+            showMsg('dl-msg', 'بدأ التنزيل في تاب جديد!', 'success');
 
         } catch (err) {
             hideProgress('dl-progress');
