@@ -522,7 +522,7 @@
         } catch (err) {
             hideProgress('dl-progress');
             const detail = err.message.includes('fetch')
-                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                ? 'تعذّر الاتصال بالخادم — الخادم قيد التحديث، انتظر دقيقة ثم أعد المحاولة'
                 : err.message;
             showMsg('dl-msg', detail, 'error');
         } finally {
@@ -572,7 +572,7 @@
         } catch (err) {
             hideProgress('dl-progress');
             const detail = err.message.includes('fetch')
-                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                ? 'تعذّر الاتصال بالخادم — الخادم قيد التحديث، انتظر دقيقة ثم أعد المحاولة'
                 : err.message;
             showMsg('dl-msg', detail, 'error');
         } finally {
@@ -694,7 +694,7 @@
             clearInterval(fakeTimer);
             hideProgress('sep-progress');
             const detail = err.message.includes('fetch')
-                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                ? 'تعذّر الاتصال بالخادم — الخادم قيد التحديث، انتظر دقيقة ثم أعد المحاولة'
                 : err.message;
             showMsg('sep-msg', detail, 'error');
         } finally {
