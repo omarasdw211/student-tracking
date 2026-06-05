@@ -89,15 +89,17 @@ async def video_info(body: VideoURL):
     try:
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp", "--dump-json", "--no-playlist",
-            "--extractor-args", "youtube:player_client=ios,web",
-            "--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            "--extractor-args", "youtube:player_client=ios",
+            "--socket-timeout", "20",
+            "--retries", "2",
             body.url,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=90)
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=408, detail="انتهى وقت الاستجابة، تحقق من الرابط")
+        proc.kill()
+        raise HTTPException(status_code=408, detail="انتهى وقت الاستجابة، الرجاء المحاولة مرة أخرى")
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="yt-dlp غير مثبت")
 
@@ -134,15 +136,17 @@ async def download_video(body: DownloadRequest):
             "--merge-output-format", "mp4",
             "-o", output_template,
             "--no-playlist",
-            "--extractor-args", "youtube:player_client=ios,web",
-            "--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            "--extractor-args", "youtube:player_client=ios",
+            "--socket-timeout", "20",
+            "--retries", "3",
             body.url,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=300)
+        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
     except asyncio.TimeoutError:
-        raise HTTPException(status_code=408, detail="انتهى وقت التنزيل")
+        proc.kill()
+        raise HTTPException(status_code=408, detail="انتهى وقت التنزيل، جرب جودة أقل")
     except FileNotFoundError:
         raise HTTPException(status_code=500, detail="yt-dlp غير مثبت")
 
