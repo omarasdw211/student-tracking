@@ -556,18 +556,33 @@
                 throw new Error(data.detail || 'فشل التنزيل');
             }
 
-            const blob = await res.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = objectUrl;
-            a.download = 'video.mp4';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(objectUrl);
+            // Check if server returned a direct URL (YouTube via Piped)
+            const contentType = res.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const data = await res.json();
+                const a = document.createElement('a');
+                a.href = data.download_url;
+                a.download = data.filename || 'video.mp4';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } else {
+                // File streamed through server (non-YouTube)
+                const blob = await res.blob();
+                const objectUrl = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = objectUrl;
+                a.download = 'video.mp4';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(objectUrl);
+            }
 
             hideProgress('dl-progress');
-            showMsg('dl-msg', 'تم تنزيل الفيديو بنجاح!', 'success');
+            showMsg('dl-msg', 'تم! إذا لم يبدأ التنزيل تلقائياً تحقق من الإشعارات أو انتظر قليلاً.', 'success');
 
         } catch (err) {
             hideProgress('dl-progress');
