@@ -88,7 +88,10 @@ def _pick_formats(raw_formats: list) -> list:
 async def video_info(body: VideoURL):
     try:
         proc = await asyncio.create_subprocess_exec(
-            "yt-dlp", "--dump-json", "--no-playlist", body.url,
+            "yt-dlp", "--dump-json", "--no-playlist",
+            "--extractor-args", "youtube:player_client=ios,web",
+            "--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            body.url,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -131,6 +134,8 @@ async def download_video(body: DownloadRequest):
             "--merge-output-format", "mp4",
             "-o", output_template,
             "--no-playlist",
+            "--extractor-args", "youtube:player_client=ios,web",
+            "--user-agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
             body.url,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,

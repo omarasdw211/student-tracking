@@ -1,8 +1,10 @@
 FROM python:3.11-slim
 
-# Install ffmpeg (required for audio processing)
+# Install ffmpeg + nodejs (yt-dlp needs nodejs to bypass YouTube bot detection)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    nodejs \
+    npm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
