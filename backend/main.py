@@ -95,7 +95,7 @@ async def video_info(body: VideoURL):
     try:
         proc = await asyncio.create_subprocess_exec(
             "yt-dlp", "--dump-json", "--no-playlist",
-            "--js-runtimes", "nodejs",
+            "--js-runtimes", "node",
             "--socket-timeout", "15",
             "--retries", "2",
             url,
@@ -148,7 +148,7 @@ async def download_video(body: DownloadRequest):
         "--merge-output-format", "mp4",
         "-o", output_template,
         "--no-playlist",
-        "--js-runtimes", "nodejs",
+        "--js-runtimes", "node",
         "--socket-timeout", "30",
         "--retries", "3",
     ]
