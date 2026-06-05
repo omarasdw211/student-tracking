@@ -6,13 +6,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     nodejs \
     npm \
     && rm -rf /var/lib/apt/lists/* \
-    && node --version && which node
+    && ln -sf /usr/bin/nodejs /usr/local/bin/node \
+    && node --version
 
 WORKDIR /app
 
 # Install Python dependencies first (for Docker layer caching)
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Verify yt-dlp can find Node.js
+RUN yt-dlp --version && node --version
 
 # Pre-download Spleeter model so first request isn't slow
 RUN python -c "from spleeter.separator import Separator; Separator('spleeter:2stems')" \
