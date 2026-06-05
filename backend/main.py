@@ -7,7 +7,6 @@ import shutil
 import uuid
 from pathlib import Path
 
-import httpx
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -31,12 +30,6 @@ SEPARATED_DIR = BASE_DIR / "separated"
 
 for d in [UPLOADS_DIR, DOWNLOADS_DIR, SEPARATED_DIR]:
     d.mkdir(exist_ok=True)
-
-COBALT_API = "https://api.cobalt.tools/"
-COBALT_HEADERS = {
-    "Accept": "application/json",
-    "Content-Type": "application/json",
-}
 
 QUALITY_OPTIONS = [
     {"format_id": "max",  "label": "أعلى جودة"},
@@ -130,44 +123,68 @@ async def video_info(body: VideoURL):
     return {"title": "فيديو", "thumbnail": "", "duration": 0, "formats": QUALITY_OPTIONS}
 
 
-# ─── Download via cobalt API ───────────────────────────────────────────────────
+# ─── Download via yt-dlp ──────────────────────────────────────────────────────
+
+# Map UI quality label → yt-dlp format selector
+_FMT_MAP = {
+    "max":  "bestvideo+bestaudio/best",
+    "1080": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+    "720":  "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    "480":  "bestvideo[height<=480]+bestaudio/best[height<=480]/best",
+    "360":  "bestvideo[height<=360]+bestaudio/best[height<=360]/best",
+}
+
 
 @app.post("/api/download")
 async def download_video(body: DownloadRequest):
-    quality = body.format_id if body.format_id != "max" else "max"
+    job_id = str(uuid.uuid4())
+    output_template = str(DOWNLOADS_DIR / f"{job_id}.%(ext)s")
+    fmt = _FMT_MAP.get(body.format_id, _FMT_MAP["max"])
 
-    payload = {"url": body.url.strip(), "videoQuality": quality}
+    cmd = [
+        "yt-dlp",
+        "-f", fmt,
+        "--merge-output-format", "mp4",
+        "-o", output_template,
+        "--no-playlist",
+        "--socket-timeout", "30",
+        "--retries", "3",
+    ]
+
+    # tv_embedded bypasses YouTube's IP-based blocking on datacenter servers
+    if _is_youtube(body.url):
+        cmd += ["--extractor-args", "youtube:player_client=tv_embedded"]
+
+    cmd.append(body.url.strip())
 
     try:
-        async with httpx.AsyncClient(timeout=30) as client:
-            r = await client.post(COBALT_API, json=payload, headers=COBALT_HEADERS)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"تعذّر الاتصال بخدمة التنزيل: {e}")
-
-    try:
-        data = r.json()
-    except Exception:
-        raise HTTPException(status_code=502, detail=f"cobalt ({r.status_code}): {r.text[:200]}")
-
-    if r.status_code != 200:
-        err_code = data.get("error", {}).get("code", "") if isinstance(data, dict) else ""
-        raise HTTPException(
-            status_code=r.status_code,
-            detail=f"cobalt رفض الطلب ({r.status_code}): {err_code or r.text[:150]}"
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
+        _, stderr = await asyncio.wait_for(proc.communicate(), timeout=600)
+    except asyncio.TimeoutError:
+        proc.kill()
+        raise HTTPException(status_code=408, detail="انتهى وقت التنزيل، جرب جودة أقل")
+    except FileNotFoundError:
+        raise HTTPException(status_code=500, detail="yt-dlp غير مثبت")
 
-    status = data.get("status")
+    if proc.returncode != 0:
+        err = stderr.decode(errors="replace")
+        raise HTTPException(status_code=400, detail=f"فشل التنزيل: {err[:300]}")
 
-    if status in ("redirect", "tunnel"):
-        return JSONResponse({"download_url": data["url"], "filename": data.get("filename", "video.mp4")})
+    matches = glob.glob(str(DOWNLOADS_DIR / f"{job_id}.*"))
+    if not matches:
+        raise HTTPException(status_code=500, detail="لم يُعثر على الملف بعد التنزيل")
 
-    if status == "picker":
-        items = data.get("picker", [])
-        if items:
-            return JSONResponse({"download_url": items[0]["url"], "filename": "video.mp4"})
-
-    error_code = data.get("error", {}).get("code", status or "unknown")
-    raise HTTPException(status_code=400, detail=f"فشل التنزيل: {error_code}")
+    file_path = matches[0]
+    return FileResponse(
+        file_path,
+        media_type="video/mp4",
+        filename="video.mp4",
+        background=BackgroundTask(_cleanup, file_path),
+    )
 
 
 # ─── Audio Separation via Spleeter ────────────────────────────────────────────

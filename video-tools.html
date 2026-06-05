@@ -551,26 +551,23 @@
                 body: JSON.stringify({ url, format_id: formatId }),
             });
 
-            const data = await res.json().catch(() => ({}));
-
             if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
                 throw new Error(data.detail || 'فشل التنزيل');
             }
 
-            const downloadUrl = data.download_url;
-            if (!downloadUrl) throw new Error('لم يُعثر على رابط التنزيل');
-
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = downloadUrl;
-            a.download = data.filename || 'video.mp4';
-            a.target = '_blank';
-            a.rel = 'noopener';
+            a.href = objectUrl;
+            a.download = 'video.mp4';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
 
             hideProgress('dl-progress');
-            showMsg('dl-msg', 'بدأ التنزيل! إذا لم يبدأ اضغط: <a href="' + downloadUrl + '" target="_blank" style="color:#1e8449;font-weight:bold;">تنزيل مباشر</a>', 'success');
+            showMsg('dl-msg', 'تم تنزيل الفيديو بنجاح!', 'success');
 
         } catch (err) {
             hideProgress('dl-progress');
