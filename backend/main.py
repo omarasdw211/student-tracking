@@ -28,17 +28,16 @@ BASE_DIR = Path(__file__).parent
 UPLOADS_DIR = BASE_DIR / "uploads"
 DOWNLOADS_DIR = BASE_DIR / "downloads"
 SEPARATED_DIR = BASE_DIR / "separated"
+COOKIES_FILE = BASE_DIR / "yt_cookies.txt"
 
 for d in [UPLOADS_DIR, DOWNLOADS_DIR, SEPARATED_DIR]:
     d.mkdir(exist_ok=True)
 
-# Multiple Piped instances as fallback
-PIPED_INSTANCES = [
-    "https://pipedapi.kavin.rocks",
-    "https://pipedapi.tokhmi.xyz",
-    "https://api.piped.yt",
-    "https://piped-api.garudalinux.org",
-]
+# Write YouTube cookies from env var to file on startup
+_yt_cookies_env = os.environ.get("YT_COOKIES", "").strip()
+if _yt_cookies_env:
+    COOKIES_FILE.write_text(_yt_cookies_env)
+    print(f"[startup] YouTube cookies loaded ({len(_yt_cookies_env)} chars)")
 
 QUALITY_OPTIONS = [
     {"format_id": "max",  "label": "أعلى جودة"},
@@ -198,70 +197,35 @@ async def download_video(body: DownloadRequest):
     url = body.url.strip()
     quality = body.format_id
 
-    # ── YouTube: use Piped API (no IP blocking, no auth needed) ──
-    if _is_youtube(url):
-        video_id = _extract_yt_id(url)
-        if not video_id:
-            raise HTTPException(status_code=400, detail="رابط YouTube غير صحيح")
-
-        data = await _piped_get(video_id)
-        if not data:
-            raise HTTPException(status_code=502, detail="تعذّر الوصول لخوادم Piped، حاول مرة أخرى")
-
-        video_url, has_audio = _piped_pick_url(data, quality)
-        if not video_url:
-            raise HTTPException(status_code=404, detail="لم تُوجد جودة مناسبة لهذا الفيديو")
-
-        # If combined stream (has audio): redirect browser directly to it
-        if has_audio:
-            return JSONResponse({"download_url": video_url, "filename": "video.mp4", "direct": True})
-
-        # Video-only: merge with audio on server using FFmpeg
-        audio_url = await _piped_audio_url(data)
-        if not audio_url:
-            return JSONResponse({"download_url": video_url, "filename": "video_no_audio.mp4", "direct": True})
-
-        job_id = str(uuid.uuid4())
-        out_path = str(DOWNLOADS_DIR / f"{job_id}.mp4")
-
-        ffmpeg_proc = await asyncio.create_subprocess_exec(
-            "ffmpeg", "-y",
-            "-i", video_url,
-            "-i", audio_url,
-            "-c:v", "copy", "-c:a", "aac",
-            "-map", "0:v:0", "-map", "1:a:0",
-            out_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        _, ff_err = await asyncio.wait_for(ffmpeg_proc.communicate(), timeout=300)
-        if ffmpeg_proc.returncode != 0:
-            # Fallback: return video-only URL
-            return JSONResponse({"download_url": video_url, "filename": "video.mp4", "direct": True})
-
-        return FileResponse(
-            out_path,
-            media_type="video/mp4",
-            filename="video.mp4",
-            background=BackgroundTask(_cleanup, out_path),
-        )
-
-    # ── Non-YouTube: use yt-dlp ──
     job_id = str(uuid.uuid4())
     output_template = str(DOWNLOADS_DIR / f"{job_id}.%(ext)s")
     fmt = _FMT_MAP.get(quality, _FMT_MAP["max"])
 
+    # YouTube requires cookies when running from a datacenter server
+    if _is_youtube(url):
+        if not COOKIES_FILE.exists():
+            raise HTTPException(
+                status_code=403,
+                detail="YouTube يحجب التنزيل من السرفر. يجب إضافة YT_COOKIES في متغيرات Railway — راجع التعليمات أسفل الصفحة."
+            )
+
+    cmd = [
+        "yt-dlp",
+        "-f", fmt,
+        "--merge-output-format", "mp4",
+        "-o", output_template,
+        "--no-playlist",
+        "--js-runtimes", "node",
+        "--socket-timeout", "30",
+        "--retries", "3",
+    ]
+    if _is_youtube(url) and COOKIES_FILE.exists():
+        cmd += ["--cookies", str(COOKIES_FILE)]
+    cmd.append(url)
+
     try:
         proc = await asyncio.create_subprocess_exec(
-            "yt-dlp",
-            "-f", fmt,
-            "--merge-output-format", "mp4",
-            "-o", output_template,
-            "--no-playlist",
-            "--js-runtimes", "node",
-            "--socket-timeout", "30",
-            "--retries", "3",
-            url,
+            *cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
