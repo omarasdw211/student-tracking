@@ -235,5 +235,9 @@ async def separate_audio(file: UploadFile = File(...)):
     )
 
 
-# Serve static files (the HTML pages) from the parent directory
-app.mount("/", StaticFiles(directory=str(BASE_DIR.parent), html=True), name="static")
+# Serve static files from the project root (one level above backend/)
+# Works both locally and in Docker (where WORKDIR is /app/backend)
+_static_dir = BASE_DIR.parent
+if not (_static_dir / "video-tools.html").exists():
+    _static_dir = Path("/app")  # Docker fallback
+app.mount("/", StaticFiles(directory=str(_static_dir), html=True), name="static")
