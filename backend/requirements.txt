@@ -1,0 +1,8 @@
+fastapi>=0.95.0,<0.109.0
+uvicorn[standard]>=0.22.0
+yt-dlp>=2024.1.0
+python-multipart>=0.0.9
+spleeter==2.4.2
+ffmpeg-python>=0.2.0
+httpx[http2]>=0.19.0,<0.20.0
+typer>=0.3.2,<0.4.0

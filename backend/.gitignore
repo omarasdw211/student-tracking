@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pyo
+uploads/
+downloads/
+separated/
+pretrained_models/

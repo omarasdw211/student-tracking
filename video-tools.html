@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أدوات الفيديو</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* ───────────── Top Bar ───────────── */
+        .topbar {
+            background: #4CAF50;
+            color: #fff;
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .topbar h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .topbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .topbar a:hover {
+            background: rgba(255,255,255,0.35);
+        }
+
+        /* ───────────── Main Layout ───────────── */
+        .container {
+            max-width: 800px;
+            margin: 32px auto;
+            padding: 0 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* ───────────── Cards ───────────── */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 18px 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-header.blue  { background: #4B89DC; }
+        .card-header.green { background: #37BC9B; }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        /* ───────────── Form Controls ───────────── */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        input[type="text"],
+        select {
+            flex: 1;
+            padding: 11px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+            background: #fafafa;
+        }
+
+        input[type="text"]:focus,
+        select:focus {
+            border-color: #4B89DC;
+            background: #fff;
+        }
+
+        select {
+            flex: none;
+            min-width: 160px;
+            cursor: pointer;
+        }
+
+        /* ───────────── Buttons ───────────── */
+        .btn {
+            padding: 11px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-blue  { background: #4B89DC; color: #fff; }
+        .btn-blue:hover:not(:disabled)  { background: #3d78c8; }
+
+        .btn-green { background: #37BC9B; color: #fff; }
+        .btn-green:hover:not(:disabled) { background: #2da085; }
+
+        .btn-full { width: 100%; margin-top: 12px; }
+
+        /* ───────────── Video Preview ───────────── */
+        #video-preview {
+            display: none;
+            background: #f8f9ff;
+            border: 1.5px solid #e0e8ff;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 18px;
+            display: none;
+            flex-direction: row;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        #video-preview.visible { display: flex; }
+
+        #preview-thumb {
+            width: 120px;
+            min-width: 120px;
+            height: 68px;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #ddd;
+        }
+
+        .preview-info {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .preview-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview-duration {
+            font-size: 0.82rem;
+            color: #666;
+        }
+
+        .quality-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .quality-label {
+            font-size: 0.9rem;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        /* ───────────── Drop Zone ───────────── */
+        .drop-zone {
+            border: 2px dashed #37BC9B;
+            border-radius: 8px;
+            padding: 36px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            margin-bottom: 18px;
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            background: #f0fdf8;
+            border-color: #2da085;
+        }
+
+        .drop-zone-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .drop-zone p {
+            color: #555;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .drop-zone small {
+            color: #999;
+            font-size: 0.82rem;
+        }
+
+        #file-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .selected-file {
+            display: none;
+            background: #f0fdf8;
+            border: 1.5px solid #37BC9B;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 14px;
+            font-size: 0.9rem;
+            color: #2a7a62;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .selected-file.visible { display: flex; }
+
+        .selected-file span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .file-clear {
+            cursor: pointer;
+            font-size: 1rem;
+            color: #888;
+            flex-shrink: 0;
+        }
+
+        .file-clear:hover { color: #e55; }
+
+        /* ───────────── Progress Bar ───────────── */
+        .progress-wrap {
+            display: none;
+            margin-top: 14px;
+        }
+
+        .progress-wrap.visible { display: block; }
+
+        .progress-label {
+            font-size: 0.88rem;
+            color: #555;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar-bg {
+            background: #e9ecef;
+            border-radius: 99px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        .progress-bar-fill.blue  { background: #4B89DC; }
+        .progress-bar-fill.green { background: #37BC9B; }
+        .progress-bar-fill.indeterminate {
+            width: 40% !important;
+            animation: slide 1.4s infinite ease-in-out;
+        }
+
+        @keyframes slide {
+            0%   { margin-right: 100%; }
+            50%  { margin-right: 0%; }
+            100% { margin-right: 100%; }
+        }
+
+        /* ───────────── Status Messages ───────────── */
+        .status-msg {
+            display: none;
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .status-msg.visible { display: block; }
+
+        .status-msg.error   { background: #fde8e8; color: #c0392b; border: 1px solid #f5b7b1; }
+        .status-msg.success { background: #e8fdf2; color: #1e8449; border: 1px solid #a9dfbf; }
+        .status-msg.info    { background: #ebf5fb; color: #1a5276; border: 1px solid #aed6f1; }
+
+        /* ───────────── Responsive ───────────── */
+        @media (max-width: 560px) {
+            .input-group { flex-direction: column; }
+            .quality-row { flex-direction: column; align-items: stretch; }
+            #video-preview.visible { flex-direction: column; }
+            #preview-thumb { width: 100%; height: auto; min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="topbar">
+    <h1>أدوات الفيديو</h1>
+    <a href="index.html">← متابعة الطلاب</a>
+</div>
+
+<div class="container">
+
+    <!-- ══════════════ CARD 1: Video Downloader ══════════════ -->
+    <div class="card">
+        <div class="card-header blue">
+            <span>&#127902;</span>
+            <span>تنزيل الفيديو</span>
+        </div>
+        <div class="card-body">
+            <div class="input-group">
+                <input type="text" id="video-url" placeholder="الصق رابط الفيديو هنا (YouTube، TikTok، Instagram...)" />
+                <button class="btn btn-blue" id="fetch-btn" onclick="fetchVideoInfo()">جلب المعلومات</button>
+            </div>
+
+            <!-- Video Preview + Quality Selector -->
+            <div id="video-preview">
+                <img id="preview-thumb" src="" alt="صورة مصغرة" />
+                <div class="preview-info">
+                    <div class="preview-title" id="preview-title"></div>
+                    <div class="preview-duration" id="preview-duration"></div>
+                    <div class="quality-row" style="margin-top: 10px;">
+                        <span class="quality-label">الجودة:</span>
+                        <select id="quality-select"></select>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-blue btn-full" id="download-btn" onclick="downloadVideo()" style="display:none;">
+                &#11015; تنزيل الفيديو
+            </button>
+
+            <div class="progress-wrap" id="dl-progress">
+                <div class="progress-label">
+                    <span id="dl-status-text">جاري التنزيل...</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill blue indeterminate" id="dl-bar"></div>
+                </div>
+            </div>
+
+            <div class="status-msg" id="dl-msg"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════ CARD 2: Audio Separator ══════════════ -->
+    <div class="card">
+        <div class="card-header green">
+            <span>&#127925;</span>
+            <span>فصل الموسيقى عن الصوت</span>
+        </div>
+        <div class="card-body">
+            <p style="font-size:0.9rem; color:#555; margin-bottom:18px; line-height:1.7;">
+                ارفع فيديو يحتوي على موسيقى وسيتم إزالة الموسيقى مع الإبقاء على الأصوات والكلام فقط،
+                باستخدام الذكاء الاصطناعي.
+            </p>
+
+            <div class="drop-zone" id="drop-zone">
+                <input type="file" id="file-input" accept="video/*" onchange="handleFileSelect(this.files[0])">
+                <div class="drop-zone-icon">&#127916;</div>
+                <p>اسحب وأفلت الفيديو هنا</p>
+                <small>أو اضغط لاختيار الملف — MP4، MOV، AVI، MKV...</small>
+            </div>
+
+            <div class="selected-file" id="selected-file-info">
+                <span>&#128196;</span>
+                <span id="selected-file-name"></span>
+                <span class="file-clear" onclick="clearFile()" title="إلغاء">&#10005;</span>
+            </div>
+
+            <button class="btn btn-green btn-full" id="separate-btn" onclick="separateAudio()" disabled>
+                &#10024; فصل الموسيقى وتنزيل الفيديو
+            </button>
+
+            <div class="progress-wrap" id="sep-progress">
+                <div class="progress-label">
+                    <span id="sep-status-text">جاري معالجة الفيديو بالذكاء الاصطناعي...</span>
+                    <span id="sep-pct"></span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill green indeterminate" id="sep-bar"></div>
+                </div>
+            </div>
+
+            <div class="status-msg" id="sep-msg"></div>
+
+            <p style="font-size:0.8rem; color:#aaa; margin-top:20px; line-height:1.6; text-align:center;">
+                المعالجة تتم على الخادم المحلي &#8226; الملف لا يُرفع إلى الإنترنت &#8226;
+                قد تستغرق المعالجة 30 ثانية أو أكثر حسب طول الفيديو
+            </p>
+        </div>
+    </div>
+
+</div><!-- /container -->
+
+<script>
+    const BACKEND_URL = 'http://localhost:8000';
+
+    let selectedFile = null;
+    let currentFormats = [];
+
+    // ──────────────────────────────────────────
+    //  Utility helpers
+    // ──────────────────────────────────────────
+    function showMsg(id, text, type) {
+        const el = document.getElementById(id);
+        el.textContent = text;
+        el.className = `status-msg ${type} visible`;
+    }
+
+    function hideMsg(id) {
+        document.getElementById(id).className = 'status-msg';
+    }
+
+    function showProgress(id) {
+        document.getElementById(id).className = 'progress-wrap visible';
+    }
+
+    function hideProgress(id) {
+        document.getElementById(id).className = 'progress-wrap';
+    }
+
+    function formatDuration(secs) {
+        if (!secs) return '';
+        const m = Math.floor(secs / 60);
+        const s = Math.floor(secs % 60);
+        return `المدة: ${m}:${String(s).padStart(2, '0')}`;
+    }
+
+    // ──────────────────────────────────────────
+    //  Video Info Fetch
+    // ──────────────────────────────────────────
+    async function fetchVideoInfo() {
+        const url = document.getElementById('video-url').value.trim();
+        if (!url) {
+            showMsg('dl-msg', 'الرجاء إدخال رابط الفيديو أولاً', 'error');
+            return;
+        }
+
+        hideMsg('dl-msg');
+        document.getElementById('video-preview').className = '';
+        document.getElementById('download-btn').style.display = 'none';
+        showProgress('dl-progress');
+        document.getElementById('dl-status-text').textContent = 'جاري جلب معلومات الفيديو...';
+        document.getElementById('fetch-btn').disabled = true;
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/video-info`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.detail || 'تعذّر جلب معلومات الفيديو');
+            }
+
+            // Populate preview
+            const thumb = document.getElementById('preview-thumb');
+            thumb.src = data.thumbnail || '';
+            thumb.style.display = data.thumbnail ? 'block' : 'none';
+
+            document.getElementById('preview-title').textContent = data.title;
+            document.getElementById('preview-duration').textContent = formatDuration(data.duration);
+
+            const sel = document.getElementById('quality-select');
+            sel.innerHTML = '';
+            currentFormats = data.formats;
+            data.formats.forEach(f => {
+                const opt = document.createElement('option');
+                opt.value = f.format_id;
+                opt.textContent = f.label;
+                sel.appendChild(opt);
+            });
+
+            document.getElementById('video-preview').className = 'visible';
+            document.getElementById('download-btn').style.display = 'block';
+            hideProgress('dl-progress');
+
+        } catch (err) {
+            hideProgress('dl-progress');
+            const detail = err.message.includes('fetch')
+                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                : err.message;
+            showMsg('dl-msg', detail, 'error');
+        } finally {
+            document.getElementById('fetch-btn').disabled = false;
+        }
+    }
+
+    // ──────────────────────────────────────────
+    //  Video Download
+    // ──────────────────────────────────────────
+    async function downloadVideo() {
+        const url = document.getElementById('video-url').value.trim();
+        const formatId = document.getElementById('quality-select').value;
+        if (!url || !formatId) return;
+
+        hideMsg('dl-msg');
+        showProgress('dl-progress');
+        document.getElementById('dl-status-text').textContent = 'جاري تنزيل الفيديو...';
+        document.getElementById('download-btn').disabled = true;
+        document.getElementById('fetch-btn').disabled = true;
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/api/download`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, format_id: formatId }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || 'فشل التنزيل');
+            }
+
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = 'video.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
+
+            hideProgress('dl-progress');
+            showMsg('dl-msg', 'تم تنزيل الفيديو بنجاح!', 'success');
+
+        } catch (err) {
+            hideProgress('dl-progress');
+            const detail = err.message.includes('fetch')
+                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                : err.message;
+            showMsg('dl-msg', detail, 'error');
+        } finally {
+            document.getElementById('download-btn').disabled = false;
+            document.getElementById('fetch-btn').disabled = false;
+        }
+    }
+
+    // ──────────────────────────────────────────
+    //  File Selection (Drag & Drop + Input)
+    // ──────────────────────────────────────────
+    function handleFileSelect(file) {
+        if (!file) return;
+        selectedFile = file;
+
+        const info = document.getElementById('selected-file-info');
+        document.getElementById('selected-file-name').textContent = file.name;
+        info.className = 'selected-file visible';
+
+        document.getElementById('separate-btn').disabled = false;
+        hideMsg('sep-msg');
+    }
+
+    function clearFile() {
+        selectedFile = null;
+        document.getElementById('file-input').value = '';
+        document.getElementById('selected-file-info').className = 'selected-file';
+        document.getElementById('separate-btn').disabled = true;
+        hideMsg('sep-msg');
+        hideProgress('sep-progress');
+    }
+
+    // Drag and drop handlers
+    const dropZone = document.getElementById('drop-zone');
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('video/')) {
+            handleFileSelect(file);
+        } else {
+            showMsg('sep-msg', 'الرجاء اختيار ملف فيديو فقط', 'error');
+        }
+    });
+
+    // Enter key on URL input
+    document.getElementById('video-url').addEventListener('keydown', e => {
+        if (e.key === 'Enter') fetchVideoInfo();
+    });
+
+    // ──────────────────────────────────────────
+    //  Audio Separation
+    // ──────────────────────────────────────────
+    async function separateAudio() {
+        if (!selectedFile) return;
+
+        const MAX_SIZE_MB = 500;
+        if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+            showMsg('sep-msg', `حجم الملف كبير جداً (الحد الأقصى ${MAX_SIZE_MB} MB)`, 'error');
+            return;
+        }
+
+        hideMsg('sep-msg');
+        showProgress('sep-progress');
+        document.getElementById('sep-status-text').textContent = 'جاري رفع الملف ومعالجته بالذكاء الاصطناعي...';
+        document.getElementById('sep-pct').textContent = '';
+        document.getElementById('separate-btn').disabled = true;
+
+        // Animate a fake progress to show activity (Spleeter doesn't stream progress)
+        let fakeProgress = 0;
+        const fakeTimer = setInterval(() => {
+            fakeProgress = Math.min(fakeProgress + Math.random() * 3, 85);
+            document.getElementById('sep-pct').textContent = `${Math.round(fakeProgress)}%`;
+        }, 800);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            const res = await fetch(`${BACKEND_URL}/api/separate-audio`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            clearInterval(fakeTimer);
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                throw new Error(data.detail || 'فشلت عملية الفصل');
+            }
+
+            document.getElementById('sep-pct').textContent = '100%';
+            document.getElementById('sep-status-text').textContent = 'اكتملت المعالجة!';
+
+            const blob = await res.blob();
+            const objectUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = objectUrl;
+            a.download = 'video_vocals_only.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(objectUrl);
+
+            hideProgress('sep-progress');
+            showMsg('sep-msg', 'تم فصل الموسيقى بنجاح! الفيديو يحتوي الآن على الأصوات فقط بدون موسيقى.', 'success');
+
+        } catch (err) {
+            clearInterval(fakeTimer);
+            hideProgress('sep-progress');
+            const detail = err.message.includes('fetch')
+                ? 'تعذّر الاتصال بالخادم — تأكد من تشغيل الخادم المحلي'
+                : err.message;
+            showMsg('sep-msg', detail, 'error');
+        } finally {
+            document.getElementById('separate-btn').disabled = false;
+        }
+    }
+</script>
+
+</body>
+</html>
