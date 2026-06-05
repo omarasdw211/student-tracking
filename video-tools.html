@@ -531,7 +531,7 @@
     }
 
     // ──────────────────────────────────────────
-    //  Video Download  (calls cobalt directly from browser)
+    //  Video Download
     // ──────────────────────────────────────────
     async function downloadVideo() {
         const url = document.getElementById('video-url').value.trim();
@@ -545,31 +545,19 @@
         document.getElementById('fetch-btn').disabled = true;
 
         try {
-            // Call cobalt API directly from the browser — no server needed
-            const res = await fetch('https://api.cobalt.tools/', {
+            const res = await fetch(`${BACKEND_URL}/api/download`, {
                 method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ url, videoQuality: formatId }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, format_id: formatId }),
             });
 
             const data = await res.json().catch(() => ({}));
-            const status = data.status;
 
-            if (!res.ok || status === 'error') {
-                const code = data?.error?.code || data?.text || 'unknown';
-                throw new Error(`فشل التنزيل: ${code}`);
+            if (!res.ok) {
+                throw new Error(data.detail || 'فشل التنزيل');
             }
 
-            let downloadUrl = null;
-            if (status === 'redirect' || status === 'tunnel') {
-                downloadUrl = data.url;
-            } else if (status === 'picker' && data.picker?.length) {
-                downloadUrl = data.picker[0].url;
-            }
-
+            const downloadUrl = data.download_url;
             if (!downloadUrl) throw new Error('لم يُعثر على رابط التنزيل');
 
             const a = document.createElement('a');
@@ -582,7 +570,7 @@
             document.body.removeChild(a);
 
             hideProgress('dl-progress');
-            showMsg('dl-msg', 'بدأ التنزيل! إذا لم يبدأ تلقائياً اضغط هنا ← <a href="' + downloadUrl + '" target="_blank">تنزيل مباشر</a>', 'success');
+            showMsg('dl-msg', 'بدأ التنزيل! إذا لم يبدأ اضغط: <a href="' + downloadUrl + '" target="_blank" style="color:#1e8449;font-weight:bold;">تنزيل مباشر</a>', 'success');
 
         } catch (err) {
             hideProgress('dl-progress');

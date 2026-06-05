@@ -144,10 +144,18 @@ async def download_video(body: DownloadRequest):
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"تعذّر الاتصال بخدمة التنزيل: {e}")
 
-    if r.status_code != 200:
-        raise HTTPException(status_code=r.status_code, detail="رفضت خدمة التنزيل الطلب، تحقق من الرابط")
+    try:
+        data = r.json()
+    except Exception:
+        raise HTTPException(status_code=502, detail=f"cobalt ({r.status_code}): {r.text[:200]}")
 
-    data = r.json()
+    if r.status_code != 200:
+        err_code = data.get("error", {}).get("code", "") if isinstance(data, dict) else ""
+        raise HTTPException(
+            status_code=r.status_code,
+            detail=f"cobalt رفض الطلب ({r.status_code}): {err_code or r.text[:150]}"
+        )
+
     status = data.get("status")
 
     if status in ("redirect", "tunnel"):
