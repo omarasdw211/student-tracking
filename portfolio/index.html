@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omar Al-Dawood</title>
+  <meta name="description" content="Omar Al-Dawood — I build simple, useful web tools. Maker of Mizan.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fcfcfa;
+      --text: #1c1c1a;
+      --muted: #6e6e68;
+      --faint: #e7e6e1;
+      --accent: #1f5e3d;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141413;
+        --text: #ebeae6;
+        --muted: #94938c;
+        --faint: #2a2a27;
+        --accent: #7dbb9a;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-color: var(--faint);
+      text-underline-offset: 3px;
+      transition: text-decoration-color 0.15s ease;
+    }
+    a:hover { text-decoration-color: var(--accent); }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 40px 0 0;
+    }
+    header .name {
+      font-weight: 600;
+      font-size: 15px;
+      text-decoration: none;
+    }
+    nav {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    nav a { text-decoration: none; }
+    nav a:hover { color: var(--text); }
+
+    .hero { padding: 96px 0 72px; }
+    h1 {
+      font-family: "Newsreader", Georgia, serif;
+      font-weight: 500;
+      font-size: 40px;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      margin: 0 0 20px;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 52ch;
+      margin: 0;
+    }
+    .hero p + p { margin-top: 14px; }
+    .hero a { color: var(--text); }
+
+    section { padding: 0 0 72px; }
+    h2 {
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin: 0 0 28px;
+    }
+
+    .project {
+      padding: 24px 0;
+      border-top: 1px solid var(--faint);
+    }
+    .project:last-of-type { border-bottom: 1px solid var(--faint); }
+    .project-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+    }
+    .project h3 {
+      font-size: 17px;
+      font-weight: 600;
+      margin: 0;
+    }
+    .project h3 a { text-decoration: none; }
+    .project h3 a:hover { color: var(--accent); }
+    .project .meta {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .project p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 56ch;
+    }
+    .project .links {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .project .links a { color: var(--text); }
+
+    .about p {
+      color: var(--muted);
+      max-width: 56ch;
+      margin: 0 0 14px;
+    }
+    .about strong { color: var(--text); font-weight: 500; }
+
+    .contact ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .contact li {
+      display: flex;
+      gap: 24px;
+      padding: 10px 0;
+      font-size: 15px;
+      border-top: 1px solid var(--faint);
+    }
+    .contact li:last-child { border-bottom: 1px solid var(--faint); }
+    .contact .label {
+      width: 90px;
+      flex-shrink: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      padding: 0 0 48px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 32px; }
+      .hero { padding: 72px 0 56px; }
+      .project-head { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <a class="name" href="#">Omar Al-Dawood</a>
+      <nav>
+        <a href="#work">Work</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <div class="hero">
+      <h1>I build simple web tools that solve real problems.</h1>
+      <p>
+        I'm Omar, a builder based in Saudi Arabia. I design and ship small,
+        focused web applications — taking them from an everyday problem to a
+        product people actually use.
+      </p>
+      <p>
+        Most recently I built <a href="https://mizan-app-994da.web.app">Mizan</a>,
+        a live web app, end to end.
+      </p>
+    </div>
+
+    <section id="work">
+      <h2>Selected Work</h2>
+
+      <div class="project">
+        <div class="project-head">
+          <h3><a href="https://mizan-app-994da.web.app">Mizan</a></h3>
+          <span class="meta">Web app · Live</span>
+        </div>
+        <p>
+          A web application I designed, built, and shipped on my own — from the
+          first idea to a deployed product. Mizan ("the scale") is focused on
+          doing one thing well, with a clean interface and no unnecessary
+          complexity.
+        </p>
+        <div class="links">
+          <a href="https://mizan-app-994da.web.app">Visit the app →</a>
+        </div>
+      </div>
+
+      <div class="project">
+        <div class="project-head">
+          <h3>Student Tracking</h3>
+          <span class="meta">Web app · Firebase</span>
+        </div>
+        <p>
+          A tracking tool for Qur'an study circles. Teachers record
+          memorization and review for each student on a Hijri calendar, with
+          real-time sync across devices and one-link sharing so a whole
+          circle's records can be handed over instantly. Built with vanilla
+          JavaScript and Firebase Realtime Database.
+        </p>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <h2>About</h2>
+      <p>
+        I started building software the practical way: I had problems in front
+        of me that no existing tool solved well, so I learned what I needed and
+        built the tools myself.
+      </p>
+      <p>
+        I care about <strong>simplicity</strong> — small apps that load fast,
+        work in Arabic and English, and respect the person using them. My
+        usual stack is JavaScript and Firebase, which lets me go from idea to
+        a live, real-time product quickly.
+      </p>
+    </section>
+
+    <section id="contact" class="contact">
+      <h2>Contact</h2>
+      <ul>
+        <li>
+          <span class="label">Email</span>
+          <a href="mailto:omar.fahd556@gmail.com">omar.fahd556@gmail.com</a>
+        </li>
+        <li>
+          <span class="label">LinkedIn</span>
+          <a href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/">linkedin.com/in/omar-al-dawood</a>
+        </li>
+        <li>
+          <span class="label">Mizan</span>
+          <a href="https://mizan-app-994da.web.app">mizan-app-994da.web.app</a>
+        </li>
+      </ul>
+    </section>
+
+    <footer>
+      © 2026 Omar Al-Dawood
+    </footer>
+  </main>
+</body>
+</html>
