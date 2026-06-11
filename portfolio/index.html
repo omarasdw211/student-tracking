@@ -1,9 +1,26 @@
 <!DOCTYPE html>
+<!--
+  ═══════════════════════════════════════════════════════════════
+  صفحة أعمال عمر الداود
+  ═══════════════════════════════════════════════════════════════
+  طريقة التعديل على كيفك:
+  1. افتح هذا الرابط:
+     https://github.com/omarasdw211/student-tracking/edit/main/portfolio/index.html
+  2. عدّل أي نص تبيه (كل الأماكن القابلة للتعديل عليها تعليق ✏️ بالعربي)
+  3. اضغط الزر الأخضر "Commit changes" فوق
+  4. خلال دقيقة أو دقيقتين التعديل يظهر تلقائياً على موقعك:
+     https://omarasdw211.github.io/student-tracking/portfolio/
+  ملاحظة: لا تعدّل على الأكواد الي بين < > إلا إذا تعرف وش تسوي،
+  عدّل النصوص فقط.
+  ═══════════════════════════════════════════════════════════════
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ✏️ عنوان الصفحة في المتصفح وفي نتائج قوقل -->
   <title>Omar Fahad Al-Dawood — Accountant</title>
+  <!-- ✏️ الوصف الي يظهر تحت اسمك في نتائج قوقل -->
   <meta name="description" content="Omar Fahad Al-Dawood is an accountant based in Riyadh, Saudi Arabia, focused on financial reporting, governance, and compliance — with a practical edge in workflow automation.">
   <meta property="og:title" content="Omar Fahad Al-Dawood — Accountant">
   <meta property="og:description" content="Accountant based in Riyadh. Financial reporting, governance, and compliance — with a practical edge in workflow automation.">
@@ -23,22 +40,28 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fcfcfa;
-      --text: #1c1c1a;
-      --muted: #6e6e68;
-      --faint: #e7e6e1;
-      --accent: #1f4e5e;
+      --bg: #f7f6f3;
+      --surface: #ffffff;
+      --text: #191918;
+      --muted: #66655f;
+      --faint: #e6e4dd;
+      --accent: #155e4e;
+      --accent-soft: #e3efeb;
+      --shadow: 0 1px 2px rgba(25, 25, 24, 0.04), 0 8px 24px -12px rgba(25, 25, 24, 0.12);
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #141413;
-        --text: #ebeae6;
-        --muted: #94938c;
-        --faint: #2a2a27;
-        --accent: #8fbecb;
+        --bg: #131312;
+        --surface: #1c1c1a;
+        --text: #ecebe7;
+        --muted: #9b9a92;
+        --faint: #2c2c29;
+        --accent: #6ec5ab;
+        --accent-soft: #1d2e29;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
       }
     }
     * { box-sizing: border-box; }
@@ -53,173 +76,269 @@
       -webkit-font-smoothing: antialiased;
     }
     main {
-      max-width: 640px;
+      max-width: 680px;
       margin: 0 auto;
       padding: 0 24px;
     }
     a {
       color: inherit;
-      text-decoration: underline;
-      text-decoration-color: var(--faint);
-      text-underline-offset: 3px;
-      transition: text-decoration-color 0.15s ease;
+      text-decoration: none;
     }
-    a:hover { text-decoration-color: var(--accent); }
 
+    /* ───── Header ───── */
     header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      padding: 40px 0 0;
+      align-items: center;
+      padding: 32px 0 0;
     }
-    header .name {
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       font-weight: 600;
       font-size: 15px;
-      text-decoration: none;
+    }
+    .monogram {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
     }
     nav {
       display: flex;
-      gap: 20px;
+      gap: 6px;
       font-size: 14px;
+      font-weight: 500;
       color: var(--muted);
     }
-    nav a { text-decoration: none; }
-    nav a:hover { color: var(--text); }
+    nav a {
+      padding: 7px 12px;
+      border-radius: 8px;
+      transition: all 0.15s ease;
+    }
+    nav a:hover { color: var(--text); background: var(--faint); }
 
-    .hero { padding: 88px 0 64px; }
+    /* ───── Hero ───── */
+    .hero { padding: 84px 0 64px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 22px;
+    }
+    .badge::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
     h1 {
       font-family: "Newsreader", Georgia, serif;
-      font-weight: 500;
-      font-size: 38px;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
-      margin: 0 0 8px;
+      font-weight: 600;
+      font-size: 46px;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      margin: 0 0 18px;
     }
-    .hero .role {
-      font-size: 15px;
-      color: var(--accent);
-      font-weight: 500;
-      margin: 0 0 20px;
-    }
-    .hero p {
+    .hero .lede {
       color: var(--muted);
-      font-size: 17px;
-      max-width: 54ch;
-      margin: 0;
+      font-size: 17.5px;
+      max-width: 56ch;
+      margin: 0 0 14px;
     }
-    .hero p + p { margin-top: 14px; }
-    .hero a { color: var(--text); }
+    .hero .lede strong { color: var(--text); font-weight: 600; }
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 14.5px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { filter: brightness(1.12); transform: translateY(-1px); }
+    .btn-ghost {
+      background: var(--surface);
+      border: 1px solid var(--faint);
+      color: var(--text);
+      box-shadow: var(--shadow);
+    }
+    .btn-ghost:hover { border-color: var(--muted); transform: translateY(-1px); }
 
+    /* ───── Sections ───── */
     section { padding: 0 0 64px; }
     h2 {
-      font-size: 13px;
-      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       color: var(--muted);
-      margin: 0 0 24px;
+      margin: 0 0 22px;
+    }
+    h2::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--faint);
     }
 
-    .entry {
-      padding: 22px 0;
-      border-top: 1px solid var(--faint);
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--faint);
+      border-radius: 16px;
+      padding: 24px 26px;
+      box-shadow: var(--shadow);
+      transition: transform 0.15s ease, border-color 0.15s ease;
     }
-    .entry:last-of-type { border-bottom: 1px solid var(--faint); }
-    .entry-head {
+    .card + .card { margin-top: 14px; }
+    a.card:hover, .card.linked:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .card-head {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       gap: 16px;
     }
-    .entry h3 {
-      font-size: 16.5px;
+    .card h3 {
+      font-size: 17px;
       font-weight: 600;
       margin: 0;
     }
-    .entry .org {
+    .card .org {
       font-size: 14.5px;
-      color: var(--muted);
-      margin: 2px 0 0;
+      color: var(--accent);
+      font-weight: 500;
+      margin: 3px 0 0;
     }
-    .entry .meta {
+    .card .meta {
       font-size: 13px;
+      font-weight: 500;
       color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--faint);
+      padding: 3px 10px;
+      border-radius: 999px;
       white-space: nowrap;
     }
-    .entry p {
-      margin: 10px 0 0;
+    .card p {
+      margin: 12px 0 0;
       color: var(--muted);
       font-size: 15px;
-      max-width: 58ch;
     }
-    .entry ul {
-      margin: 10px 0 0;
+    .card ul {
+      margin: 12px 0 0;
       padding-left: 18px;
       color: var(--muted);
       font-size: 15px;
     }
-    .entry ul li { margin: 4px 0; }
+    .card ul li { margin: 5px 0; }
+    .card .ext {
+      color: var(--accent);
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-block;
+      margin-top: 12px;
+    }
 
-    .skills-grid {
+    /* ───── Skills ───── */
+    .skill-group { margin-bottom: 22px; }
+    .skill-group h3 {
+      font-size: 14.5px;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .pill {
+      background: var(--surface);
+      border: 1px solid var(--faint);
+      color: var(--text);
+      font-size: 13.5px;
+      font-weight: 500;
+      padding: 7px 14px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ───── Contact ───── */
+    .contact-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 32px;
-      border-top: 1px solid var(--faint);
-      border-bottom: 1px solid var(--faint);
-      padding: 24px 0;
+      gap: 14px;
     }
-    .skills-grid h3 {
-      font-size: 14px;
+    .contact-grid .card {
+      display: block;
+    }
+    .contact-grid .label {
+      font-size: 12.5px;
       font-weight: 600;
-      margin: 0 0 10px;
-    }
-    .skills-grid ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       color: var(--muted);
-      font-size: 14.5px;
+      margin-bottom: 6px;
     }
-    .skills-grid li { padding: 3px 0; }
-
-    .contact ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-    .contact li {
-      display: flex;
-      gap: 24px;
-      padding: 10px 0;
+    .contact-grid .value {
       font-size: 15px;
-      border-top: 1px solid var(--faint);
-    }
-    .contact li:last-child { border-bottom: 1px solid var(--faint); }
-    .contact .label {
-      width: 90px;
-      flex-shrink: 0;
-      color: var(--muted);
-      font-size: 14px;
+      font-weight: 600;
+      word-break: break-word;
     }
 
     footer {
       padding: 0 0 48px;
       font-size: 13px;
       color: var(--muted);
+      text-align: center;
     }
 
-    @media (max-width: 520px) {
-      h1 { font-size: 31px; }
-      .hero { padding: 64px 0 56px; }
-      .entry-head { flex-direction: column; gap: 2px; }
-      .skills-grid { grid-template-columns: 1fr; gap: 24px; }
+    @media (max-width: 560px) {
+      h1 { font-size: 35px; }
+      .hero { padding: 60px 0 52px; }
+      .card-head { flex-direction: column; gap: 8px; }
+      .contact-grid { grid-template-columns: 1fr; }
+      nav a { padding: 7px 9px; }
     }
   </style>
 </head>
 <body>
   <main>
     <header>
-      <a class="name" href="#">Omar Al-Dawood</a>
+      <a class="brand" href="#">
+        <span class="monogram">OA</span>
+        <!-- ✏️ اسمك المختصر فوق يسار -->
+        <span>Omar Al-Dawood</span>
+      </a>
       <nav>
         <a href="#experience">Experience</a>
         <a href="#projects">Projects</a>
@@ -228,33 +347,48 @@
     </header>
 
     <div class="hero">
+      <!-- ✏️ الشارة الخضراء فوق اسمك: حالتك الوظيفية وموقعك -->
+      <span class="badge">Open to opportunities · Riyadh</span>
+
+      <!-- ✏️ اسمك الكامل -->
       <h1>Omar Fahad Al-Dawood</h1>
-      <p class="role">Accountant — Riyadh, Saudi Arabia</p>
-      <p>
-        I'm an accountant with hands-on experience in financial reporting,
-        governance, and compliance, gained inside a government-scale finance
-        unit. I hold a Bachelor of Accounting from Prince Sattam bin Abdulaziz
-        University (GPA 4.16 / 5.0).
+
+      <!-- ✏️ النبذة الأولى عنك -->
+      <p class="lede">
+        <strong>Accountant</strong> with hands-on experience in financial
+        reporting, governance, and compliance — gained inside a
+        government-scale finance unit. Bachelor of Accounting from Prince
+        Sattam bin Abdulaziz University.
       </p>
-      <p>
-        What sets my work apart is a practical edge in automation: I use tools
-        like n8n, AI agents, and advanced Excel to make financial processes
-        faster and less error-prone — without losing the accuracy and control
-        that accounting demands.
+      <!-- ✏️ النبذة الثانية: ميزتك الإضافية -->
+      <p class="lede">
+        What sets my work apart is a practical edge in automation: I use n8n,
+        AI agents, and advanced Excel to make financial processes faster and
+        less error-prone — without losing the accuracy that accounting
+        demands.
       </p>
+
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="mailto:omar.fahd556@gmail.com">Get in touch</a>
+        <a class="btn btn-ghost" href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/">LinkedIn</a>
+      </div>
     </div>
 
     <section id="experience">
       <h2>Experience</h2>
 
-      <div class="entry">
-        <div class="entry-head">
+      <div class="card">
+        <div class="card-head">
           <div>
+            <!-- ✏️ المسمى الوظيفي -->
             <h3>Finance &amp; Accounting Intern</h3>
+            <!-- ✏️ جهة العمل -->
             <p class="org">Imam Mohammad Ibn Saud Islamic University</p>
           </div>
+          <!-- ✏️ السنة -->
           <span class="meta">2025</span>
         </div>
+        <!-- ✏️ مهامك وإنجازاتك (كل سطر بين <li> و </li>) -->
         <ul>
           <li>Supported financial documentation and approval workflows at an institutional scale</li>
           <li>Reviewed financial records and ensured compliance with internal procedures</li>
@@ -267,19 +401,22 @@
     <section id="education">
       <h2>Education &amp; Certification</h2>
 
-      <div class="entry">
-        <div class="entry-head">
+      <div class="card">
+        <div class="card-head">
           <div>
+            <!-- ✏️ الشهادة -->
             <h3>Bachelor of Accounting</h3>
+            <!-- ✏️ الجامعة -->
             <p class="org">College of Business Administration — Prince Sattam bin Abdulaziz University</p>
           </div>
-          <span class="meta">GPA 4.16 / 5.0</span>
+          <span class="meta">Completed</span>
         </div>
       </div>
 
-      <div class="entry">
-        <div class="entry-head">
+      <div class="card">
+        <div class="card-head">
           <div>
+            <!-- ✏️ اسم الدورة / الشهادة -->
             <h3>E-Accounting Using Sage 50 / Peachtree</h3>
             <p class="org">Certified completion — 12 training hours</p>
           </div>
@@ -290,26 +427,31 @@
 
     <section id="skills">
       <h2>Skills</h2>
-      <div class="skills-grid">
-        <div>
-          <h3>Accounting</h3>
-          <ul>
-            <li>Financial Reporting &amp; Bookkeeping</li>
-            <li>Governance &amp; Compliance</li>
-            <li>Internal Auditing</li>
-            <li>Sage 50 / Peachtree</li>
-            <li>Advanced Excel</li>
-          </ul>
+
+      <div class="skill-group">
+        <h3>Accounting</h3>
+        <!-- ✏️ مهارات المحاسبة (كل مهارة بين <span class="pill"> و </span>) -->
+        <div class="pills">
+          <span class="pill">Financial Reporting</span>
+          <span class="pill">Bookkeeping</span>
+          <span class="pill">Governance &amp; Compliance</span>
+          <span class="pill">Internal Auditing</span>
+          <span class="pill">Sage 50 / Peachtree</span>
+          <span class="pill">Advanced Excel</span>
         </div>
-        <div>
-          <h3>Automation &amp; Tools</h3>
-          <ul>
-            <li>AI-Powered Workflow Automation</li>
-            <li>n8n &amp; AI Agents</li>
-            <li>Data Analysis Tools</li>
-            <li>Trello, Notion</li>
-            <li>Arabic &amp; English</li>
-          </ul>
+      </div>
+
+      <div class="skill-group">
+        <h3>Automation &amp; Tools</h3>
+        <!-- ✏️ مهارات الأتمتة والأدوات -->
+        <div class="pills">
+          <span class="pill">AI-Powered Workflow Automation</span>
+          <span class="pill">n8n</span>
+          <span class="pill">AI Agents</span>
+          <span class="pill">Data Analysis</span>
+          <span class="pill">Trello</span>
+          <span class="pill">Notion</span>
+          <span class="pill">Arabic &amp; English</span>
         </div>
       </div>
     </section>
@@ -317,11 +459,13 @@
     <section id="projects">
       <h2>Projects</h2>
 
-      <div class="entry">
-        <div class="entry-head">
+      <div class="card">
+        <div class="card-head">
+          <!-- ✏️ اسم المشروع -->
           <h3>Payroll Automation Workflow</h3>
           <span class="meta">2025</span>
         </div>
+        <!-- ✏️ تفاصيل المشروع -->
         <ul>
           <li>Built an automated payroll pipeline using n8n and AI agents to reduce manual data entry and minimize human error</li>
           <li>Integrated an AI agent for anomaly detection in expense entries</li>
@@ -329,38 +473,43 @@
         </ul>
       </div>
 
-      <div class="entry">
-        <div class="entry-head">
-          <h3><a href="https://mizan-app-994da.web.app">Mizan</a></h3>
+      <div class="card linked">
+        <div class="card-head">
+          <h3>Mizan</h3>
           <span class="meta">Side project · Live</span>
         </div>
+        <!-- ✏️ وصف تطبيق ميزان -->
         <p>
           A web application I built and shipped on my own — a small example of
           how I turn a manual process into a working digital tool.
         </p>
+        <a class="ext" href="https://mizan-app-994da.web.app">Visit the app ↗</a>
       </div>
     </section>
 
-    <section id="contact" class="contact">
+    <section id="contact">
       <h2>Contact</h2>
-      <ul>
-        <li>
-          <span class="label">Email</span>
-          <a href="mailto:omar.fahd556@gmail.com">omar.fahd556@gmail.com</a>
-        </li>
-        <li>
-          <span class="label">Phone</span>
-          <a href="tel:+966508176053">+966 50 817 6053</a>
-        </li>
-        <li>
-          <span class="label">LinkedIn</span>
-          <a href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/">linkedin.com/in/omar-al-dawood</a>
-        </li>
-        <li>
-          <span class="label">Location</span>
-          <span>Riyadh, Saudi Arabia</span>
-        </li>
-      </ul>
+      <div class="contact-grid">
+        <a class="card" href="mailto:omar.fahd556@gmail.com">
+          <div class="label">Email</div>
+          <!-- ✏️ إيميلك -->
+          <div class="value">omar.fahd556@gmail.com</div>
+        </a>
+        <a class="card" href="tel:+966508176053">
+          <div class="label">Phone</div>
+          <!-- ✏️ جوالك -->
+          <div class="value">+966 50 817 6053</div>
+        </a>
+        <a class="card" href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/">
+          <div class="label">LinkedIn</div>
+          <div class="value">omar-al-dawood</div>
+        </a>
+        <div class="card">
+          <div class="label">Location</div>
+          <!-- ✏️ مدينتك -->
+          <div class="value">Riyadh, Saudi Arabia</div>
+        </div>
+      </div>
     </section>
 
     <footer>
