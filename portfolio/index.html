@@ -268,6 +268,39 @@
       display: inline-block;
       margin-top: 12px;
     }
+    .card-head .lead {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+    .logo {
+      width: 48px;
+      height: 48px;
+      flex-shrink: 0;
+      border-radius: 12px;
+      border: 1px solid var(--faint);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 6px;
+    }
+    .logo .fb-letter {
+      display: none;
+      font-family: "Newsreader", Georgia, serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+    .logo.fb img { display: none; }
+    .logo.fb .fb-letter { display: block; }
 
     /* ───── Skills ───── */
     .skill-group { margin-bottom: 22px; }
@@ -379,11 +412,18 @@
 
       <div class="card">
         <div class="card-head">
-          <div>
-            <!-- ✏️ المسمى الوظيفي -->
-            <h3>Finance &amp; Accounting Intern</h3>
-            <!-- ✏️ جهة العمل -->
-            <p class="org">Imam Mohammad Ibn Saud Islamic University</p>
+          <div class="lead">
+            <!-- ✏️ شعار جهة العمل (غيّر الرابط في src لتغيير الشعار) -->
+            <span class="logo">
+              <img src="https://commons.wikimedia.org/wiki/Special:FilePath/LogoI_of_Imam_Mohammad_Ibn_Saud_Islamic_University.png?width=96" alt="Imam Mohammad Ibn Saud Islamic University logo" loading="lazy" onerror="this.parentElement.classList.add('fb')">
+              <span class="fb-letter">I</span>
+            </span>
+            <div>
+              <!-- ✏️ المسمى الوظيفي -->
+              <h3>Finance &amp; Accounting Intern</h3>
+              <!-- ✏️ جهة العمل -->
+              <p class="org">Imam Mohammad Ibn Saud Islamic University</p>
+            </div>
           </div>
           <!-- ✏️ السنة -->
           <span class="meta">2025</span>
@@ -403,11 +443,18 @@
 
       <div class="card">
         <div class="card-head">
-          <div>
-            <!-- ✏️ الشهادة -->
-            <h3>Bachelor of Accounting</h3>
-            <!-- ✏️ الجامعة -->
-            <p class="org">College of Business Administration — Prince Sattam bin Abdulaziz University</p>
+          <div class="lead">
+            <!-- ✏️ شعار الجامعة -->
+            <span class="logo">
+              <img src="https://www.google.com/s2/favicons?domain=psau.edu.sa&amp;sz=128" alt="Prince Sattam bin Abdulaziz University logo" loading="lazy" onerror="this.parentElement.classList.add('fb')">
+              <span class="fb-letter">P</span>
+            </span>
+            <div>
+              <!-- ✏️ الشهادة -->
+              <h3>Bachelor of Accounting</h3>
+              <!-- ✏️ الجامعة -->
+              <p class="org">College of Business Administration — Prince Sattam bin Abdulaziz University</p>
+            </div>
           </div>
           <span class="meta">Completed</span>
         </div>
@@ -415,10 +462,17 @@
 
       <div class="card">
         <div class="card-head">
-          <div>
-            <!-- ✏️ اسم الدورة / الشهادة -->
-            <h3>E-Accounting Using Sage 50 / Peachtree</h3>
-            <p class="org">Certified completion — 12 training hours</p>
+          <div class="lead">
+            <!-- ✏️ شعار الشهادة -->
+            <span class="logo">
+              <img src="https://www.google.com/s2/favicons?domain=sage.com&amp;sz=128" alt="Sage logo" loading="lazy" onerror="this.parentElement.classList.add('fb')">
+              <span class="fb-letter">S</span>
+            </span>
+            <div>
+              <!-- ✏️ اسم الدورة / الشهادة -->
+              <h3>E-Accounting Using Sage 50 / Peachtree</h3>
+              <p class="org">Certified completion — 12 training hours</p>
+            </div>
           </div>
           <span class="meta">2024</span>
         </div>
@@ -461,8 +515,15 @@
 
       <div class="card">
         <div class="card-head">
-          <!-- ✏️ اسم المشروع -->
-          <h3>Payroll Automation Workflow</h3>
+          <div class="lead">
+            <!-- ✏️ شعار أداة المشروع (n8n) -->
+            <span class="logo">
+              <img src="https://www.google.com/s2/favicons?domain=n8n.io&amp;sz=128" alt="n8n logo" loading="lazy" onerror="this.parentElement.classList.add('fb')">
+              <span class="fb-letter">P</span>
+            </span>
+            <!-- ✏️ اسم المشروع -->
+            <h3>Payroll Automation Workflow</h3>
+          </div>
           <span class="meta">2025</span>
         </div>
         <!-- ✏️ تفاصيل المشروع -->
@@ -475,7 +536,14 @@
 
       <div class="card linked">
         <div class="card-head">
-          <h3>Mizan</h3>
+          <div class="lead">
+            <!-- ✏️ شعار تطبيق ميزان (يسحب أيقونة التطبيق تلقائياً) -->
+            <span class="logo">
+              <img src="https://www.google.com/s2/favicons?domain=mizan-app-994da.web.app&amp;sz=128" alt="Mizan app icon" loading="lazy" onerror="this.parentElement.classList.add('fb')">
+              <span class="fb-letter">M</span>
+            </span>
+            <h3>Mizan</h3>
+          </div>
           <span class="meta">Side project · Live</span>
         </div>
         <!-- ✏️ وصف تطبيق ميزان -->
