@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omar Fahad Al-Dawood — Accountant</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fafbff;--text:#1a1d2e;--muted:#646a85;--line:#e4e7f2;--indigo:#4f46e5;--soft:#eef0fe}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:"Manrope",sans-serif;font-size:16px;line-height:1.65}
+main{max-width:660px;margin:0 auto;padding:0 24px}
+a{color:inherit;text-decoration:none}
+.hero{display:flex;gap:34px;align-items:center;padding:80px 0 60px}
+.hero img{width:150px;height:150px;border-radius:28px;object-fit:cover;flex-shrink:0;box-shadow:0 24px 48px -20px rgba(79,70,229,.4)}
+.chip{display:inline-flex;align-items:center;gap:8px;background:var(--soft);color:var(--indigo);font-size:12.5px;font-weight:800;padding:7px 15px;border-radius:99px;margin-bottom:16px}
+.chip::before{content:"";width:7px;height:7px;border-radius:99px;background:#22c55e}
+h1{font-size:40px;font-weight:800;margin:0 0 12px;letter-spacing:-.025em;line-height:1.1}
+h1 span{color:var(--indigo)}
+.hero p{color:var(--muted);margin:0;font-size:16px;max-width:46ch}
+.btns{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+.btn{padding:12px 22px;border-radius:12px;font-weight:800;font-size:14px;transition:.15s}
+.btn.p{background:var(--indigo);color:#fff;box-shadow:0 10px 22px -10px rgba(79,70,229,.55)}
+.btn.p:hover{transform:translateY(-2px)}
+.btn.s{background:#fff;border:1.5px solid var(--line)}
+.btn.s:hover{border-color:var(--indigo);color:var(--indigo)}
+h2{font-size:13px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--indigo);margin:0 0 26px}
+section{padding:0 0 56px}
+.tl{position:relative;padding-left:34px}
+.tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line)}
+.tstep{position:relative;padding-bottom:26px}
+.tstep:last-child{padding-bottom:0}
+.tstep::before{content:"";position:absolute;left:-31px;top:5px;width:14px;height:14px;border-radius:99px;background:#fff;border:3.5px solid var(--indigo)}
+.thead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.thead img{width:40px;height:40px;border-radius:10px;object-fit:contain;background:#fff;border:1px solid var(--line);padding:4px}
+.tstep h3{margin:0;font-size:16.5px;font-weight:800}
+.tstep .org{color:var(--indigo);font-weight:700;font-size:13.5px;margin:1px 0 0}
+.tstep .when{margin-left:auto;font-size:12px;font-weight:800;color:var(--muted);background:#fff;border:1px solid var(--line);padding:4px 12px;border-radius:99px;white-space:nowrap}
+.tstep ul{margin:10px 0 0;padding-left:17px;color:var(--muted);font-size:14.5px}
+.tstep p{margin:10px 0 0;color:var(--muted);font-size:14.5px;max-width:56ch}
+.tstep a.ext{color:var(--indigo);font-weight:800;font-size:13.5px;display:inline-block;margin-top:9px}
+.bars{display:grid;gap:14px}
+.bar-row{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:center;font-size:14px;font-weight:700}
+.track{height:9px;border-radius:99px;background:var(--soft);overflow:hidden}
+.fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--indigo),#818cf8)}
+.minis{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
+.mini{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--muted)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ccard{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:20px;display:flex;gap:14px;align-items:center;transition:.15s}
+.ccard:hover{border-color:var(--indigo);transform:translateY(-2px)}
+.cic{width:42px;height:42px;border-radius:12px;background:var(--soft);color:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cic svg{width:18px;height:18px}
+.ccard .l{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.ccard .v{font-size:13.5px;font-weight:800;word-break:break-all}
+footer{color:var(--muted);font-size:13px;text-align:center;padding:0 0 44px}
+@media(max-width:560px){.hero{flex-direction:column-reverse;align-items:flex-start;padding-top:56px}h1{font-size:31px}.bar-row{grid-template-columns:1fr;gap:6px}.cgrid{grid-template-columns:1fr}.tstep .when{margin-left:0}}
+</style>
+</head>
+<body>
+<main>
+  <div class="hero">
+    <div>
+      <span class="chip">Open to opportunities · Riyadh</span>
+      <h1>Omar Fahad Al-Dawood — <span>Accountant</span></h1>
+      <p>Financial reporting, governance, and compliance — with a practical edge in AI-powered workflow automation. Numbers you can trust, delivered faster.</p>
+      <div class="btns"><a class="btn p" href="mailto:omar.fahd556@gmail.com">Get in touch</a><a class="btn s" href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/">LinkedIn</a></div>
+    </div>
+    <img src="../omar.jpg" alt="Omar Fahad Al-Dawood">
+  </div>
+
+  <section>
+    <h2>Journey</h2>
+    <div class="tl">
+      <div class="tstep">
+        <div class="thead">
+          <img src="https://commons.wikimedia.org/wiki/Special:FilePath/LogoI_of_Imam_Mohammad_Ibn_Saud_Islamic_University.png?width=96" alt="">
+          <div><h3>Finance &amp; Accounting Intern</h3><p class="org">Imam Mohammad Ibn Saud Islamic University</p></div>
+          <span class="when">2025</span>
+        </div>
+        <ul>
+          <li>Supported financial documentation and approval workflows at an institutional scale</li>
+          <li>Reviewed financial records and ensured compliance with internal procedures</li>
+          <li>Supported internal audit processes and financial control reviews</li>
+        </ul>
+      </div>
+      <div class="tstep">
+        <div class="thead">
+          <img src="https://www.google.com/s2/favicons?domain=psau.edu.sa&amp;sz=128" alt="">
+          <div><h3>Bachelor of Accounting</h3><p class="org">Prince Sattam bin Abdulaziz University</p></div>
+          <span class="when">Completed</span>
+        </div>
+      </div>
+      <div class="tstep">
+        <div class="thead">
+          <img src="https://www.google.com/s2/favicons?domain=ibsacademy.org&amp;sz=128" alt="">
+          <div><h3>E-Accounting Using Sage 50 / Peachtree</h3><p class="org">IBS Training Academy — 12 training hours</p></div>
+          <span class="when">Jan 2024</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Skills</h2>
+    <div class="bars">
+      <div class="bar-row"><span>Financial Reporting</span><div class="track"><div class="fill" style="width:92%"></div></div></div>
+      <div class="bar-row"><span>Governance &amp; Compliance</span><div class="track"><div class="fill" style="width:88%"></div></div></div>
+      <div class="bar-row"><span>Internal Auditing</span><div class="track"><div class="fill" style="width:82%"></div></div></div>
+      <div class="bar-row"><span>Advanced Excel</span><div class="track"><div class="fill" style="width:90%"></div></div></div>
+      <div class="bar-row"><span>Workflow Automation (n8n)</span><div class="track"><div class="fill" style="width:85%"></div></div></div>
+    </div>
+    <div class="minis"><span class="mini">Sage 50 / Peachtree</span><span class="mini">Bookkeeping</span><span class="mini">AI Agents</span><span class="mini">Data Analysis</span><span class="mini">Trello</span><span class="mini">Notion</span><span class="mini">Arabic &amp; English</span></div>
+  </section>
+
+  <section>
+    <h2>Projects</h2>
+    <div class="tl">
+      <div class="tstep">
+        <div class="thead">
+          <img src="https://www.google.com/s2/favicons?domain=n8n.io&amp;sz=128" alt="">
+          <div><h3>Payroll Automation Workflow</h3><p class="org">Personal project</p></div>
+          <span class="when">2025</span>
+        </div>
+        <p>Automated payroll pipeline using n8n and AI agents — anomaly detection in expense entries, automated reconciliation, minimal manual data entry.</p>
+      </div>
+      <div class="tstep">
+        <div class="thead">
+          <img src="../mizan-logo.svg" alt="">
+          <div><h3>Mizan</h3><p class="org">Side project — Live</p></div>
+          <span class="when">Live</span>
+        </div>
+        <p>A live web application I designed, built, and shipped on my own.</p>
+        <a class="ext" href="https://mizan-app-994da.web.app">Visit the app →</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Contact</h2>
+    <div class="cgrid">
+      <a class="ccard" href="mailto:omar.fahd556@gmail.com"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><div><div class="l">Email</div><div class="v">omar.fahd556@gmail.com</div></div></a>
+      <a class="ccard" href="tel:+966508176053"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><div><div class="l">Phone</div><div class="v">+966 50 817 6053</div></div></a>
+      <a class="ccard" href="https://www.linkedin.com/in/omar-al-dawood-bb44b2361/"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></span><div><div class="l">LinkedIn</div><div class="v">omar-al-dawood</div></div></a>
+      <div class="ccard"><span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span><div><div class="l">Location</div><div class="v">Riyadh, Saudi Arabia</div></div></div>
+    </div>
+  </section>
+</main>
+<footer>© 2026 Omar Fahad Al-Dawood</footer>
+</body>
+</html>
